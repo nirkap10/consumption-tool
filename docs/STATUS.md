@@ -2,19 +2,19 @@
 
 ## Where we are
 
-Step 2 done, on branch `step-2-schema` (branched from `step-1-skeleton`, because
-PR #1 is still waiting for review).
+Steps 1 and 2 done and merged into `main` (PR #1 and PR #2).
 
-Four Flyway migrations create the four tables: `V1` organizations (written by Nir),
+Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
+
+Step 2: four Flyway migrations create the four tables: `V1` organizations (written by Nir),
 `V2` users, `V3` usage_events with its two indexes, `V4` grants. Each table has a
 JPA entity in `entity/` and a Spring Data repository in `repository/`. The app boots
 with `ddl-auto: validate`, so Hibernate has confirmed the entities match the tables.
 
-Step 1 (Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`) is PR #1.
+PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- Merge PR #1 after review, then open PR #2 for `step-2-schema`.
 - **Step 3 — Organizations and users.** `POST /organizations` and `POST /users`.
 
 ## Open questions

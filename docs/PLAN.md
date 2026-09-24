@@ -1,7 +1,7 @@
 # Plan
 
-The roadmap. One branch and one pull request per step, so the mentor reviews each
-one in isolation. Current position lives in `STATUS.md`, not here.
+The roadmap. One branch and one pull request per step, so each step stays small
+and separate in the history. Current position lives in `STATUS.md`, not here.
 
 Repo: `https://github.com/nirkap10/consumption-tool.git`
 
