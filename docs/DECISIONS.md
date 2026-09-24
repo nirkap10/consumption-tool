@@ -231,3 +231,17 @@ extra queries, and the API already deals in ids.
 
 **Rejected:** JPA relationships — useful when code navigates from a user to its
 organization object, which nothing here does yet. Revisit if that changes.
+
+---
+
+## 2026-09-24 — Nir merges each step's PR; no mentor approval per step
+
+**Decision:** Each step still gets its own branch and pull request, but Nir merges
+it himself. The mentor does not have to approve every step before it lands on
+`main`.
+
+**Why:** Waiting for a review on every step slows the work down, and Nir decided
+the per-step approval isn't needed.
+
+**Kept:** One branch and one PR per step. Each step stays a small, readable unit
+in the history, and the mentor can still look at any PR afterwards.
