@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/consumption
+    username: consumption
+    password: consumption
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false

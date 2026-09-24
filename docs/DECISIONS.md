@@ -187,3 +187,22 @@ rejected.
 
 **Note:** That folder contained no source code, only documents, so nothing was lost.
 It is left in place, untouched.
+
+---
+
+## 2026-09-24 — Spring Boot 3.5.16, package `com.nirkap.consumption`
+
+**Decision:** The project inherits from `spring-boot-starter-parent` 3.5.16, the
+newest 3.x release at the time. Maven coordinates are `com.nirkap:consumption-tool`
+and all code lives under the `com.nirkap.consumption` package.
+
+**Why:** The stack decision says Spring Boot 3.x; 3.5 is the last 3.x line. The
+package name replaces IntelliJ's `org.example` placeholder with one tied to the
+author's GitHub name.
+
+**Rejected:** Spring Boot 4.x, which is outside the agreed stack. Also rejected:
+`io.github.nirkap10`, the formal convention for GitHub-hosted projects, as longer
+for no practical gain here.
+
+**Consequence:** Flyway 10+ (brought in by this Spring Boot version) needs the
+separate `flyway-database-postgresql` dependency to talk to Postgres.
