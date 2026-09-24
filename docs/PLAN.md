@@ -55,6 +55,7 @@ postgresql, flyway and test dependencies. `docker-compose.yml` running Postgres 
 
 Flyway `V1__initial_schema.sql` creating all four tables plus the two indexes on
 `usage_events`. JPA entities and Spring Data repositories.
+*(Done as four migrations, one per table — see DECISIONS 2026-09-24.)*
 
 *Verify:* app boots clean; `flyway_schema_history` contains V1; `\dt` in psql lists
 four tables.
