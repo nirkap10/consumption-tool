@@ -206,3 +206,28 @@ for no practical gain here.
 
 **Consequence:** Flyway 10+ (brought in by this Spring Boot version) needs the
 separate `flyway-database-postgresql` dependency to talk to Postgres.
+
+---
+
+## 2026-09-24 — One migration per table; plain id fields in entities
+
+**Decision:** The schema is four Flyway migrations, one per table, in foreign-key
+order: `V1` organizations, `V2` users, `V3` usage_events, `V4` grants. This
+supersedes the single `V1__initial_schema.sql` described in `PLAN.md` Step 2.
+
+Entities store related ids as plain fields (`UUID organizationId`, `UUID userId`),
+not as JPA relationships (`@ManyToOne Organization organization`). The foreign
+keys are still enforced by the database.
+
+The two indexes on `usage_events` are `(user_id, occurred_at)` and
+`(organization_id, occurred_at)`, matching the two scopes of the monthly report.
+
+Code is laid out by layer: `controller/`, `entity/`, `repository/` (and `service/`
+from Step 3).
+
+**Why:** One file per table let Nir write the first table on its own and keeps each
+file small to review. Plain id fields are the simplest mapping: no lazy loading, no
+extra queries, and the API already deals in ids.
+
+**Rejected:** JPA relationships — useful when code navigates from a user to its
+organization object, which nothing here does yet. Revisit if that changes.
