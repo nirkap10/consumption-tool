@@ -1,25 +1,24 @@
-# Status — 2026-09-23
+# Status — 2026-09-24
 
 ## Where we are
 
-Step 0 done. The repository exists with its four working documents and a README
-stub, and the first commit is pushed to `main`.
+Step 1 done, on branch `step-1-skeleton`. The app is a Spring Boot 3.5.16 project
+(package `com.nirkap.consumption`) with Postgres 16 in `docker-compose.yml`. It
+connects to the database on startup and answers `GET /api/v1/ping` with
+`{"status":"ok"}`.
 
-No code yet. Nothing builds yet — that is expected at this point.
+No tables yet. Flyway runs on startup but has no migrations to apply.
+
+The JDK blocker is gone: Temurin 21 is installed and Maven uses it.
 
 ## Next
 
-**Step 1 — Skeleton and database.** `pom.xml` with the Spring Boot 3 parent and
-starters, `docker-compose.yml` for Postgres 16, `application.yml`, the main class,
-and a `GET /api/v1/ping` endpoint.
-
-**Blocked until the JDK is fixed.** `JAVA_HOME` points at an Eclipse Adoptium path
-that no longer exists, and the only JDK on the machine is Java 8. Run
-`winget install EclipseAdoptium.Temurin.21.JDK`, open a new terminal, and confirm
-that both `java -version` and `mvn -v` report 21. See the prerequisite section in
-`PLAN.md`.
+**Step 2 — Schema and entities.** Flyway `V1__initial_schema.sql` with the four
+tables and the two indexes on `usage_events`, plus JPA entities and repositories.
 
 ## Open questions
 
+- Maven wrapper (`mvnw`): would let someone build without installing Maven. Not
+  in the plan, so not added. Worth deciding before Step 9's README.
 - Nothing blocking the design. The deferred items (transactions, idempotency, auth,
   customers) are all recorded in `DECISIONS.md` with their revisit triggers.

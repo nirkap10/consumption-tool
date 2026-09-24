@@ -9,6 +9,9 @@ Repo: `https://github.com/nirkap10/consumption-tool.git`
 
 ## Prerequisite — a working JDK 21
 
+**Resolved 2026-09-24.** Temurin 21.0.12 installed; `java -version` and `mvn -v`
+both report 21. The original note is kept below for the record.
+
 **Blocked as of 2026-09-23.** `JAVA_HOME` points at
 `C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot`, which no longer exists, so
 `mvn` fails immediately. The only real JDK on the machine is Java 8, which Spring

@@ -29,4 +29,10 @@ Java 21 · Spring Boot 3 · PostgreSQL 16 (Docker) · Spring Data JPA · Flyway 
 
 ## Running it
 
-Not yet runnable — see `docs/PLAN.md`, Step 1.
+Needs JDK 21, Maven and Docker Desktop.
+
+```
+docker compose up -d        # start Postgres 16
+mvn spring-boot:run         # start the app on port 8080
+curl localhost:8080/api/v1/ping
+```
