@@ -1,4 +1,4 @@
-# Status — 2026-09-24
+# Status — 2026-09-28
 
 ## Where we are
 
@@ -11,11 +11,16 @@ Step 2: four Flyway migrations create the four tables: `V1` organizations (writt
 JPA entity in `entity/` and a Spring Data repository in `repository/`. The app boots
 with `ddl-auto: validate`, so Hibernate has confirmed the entities match the tables.
 
+Step 3 is done on branch `step-3-orgs-users`, waiting for Nir to merge:
+`POST /organizations` and `POST /users`, both returning `201` with `{"id": ...}`.
+A new user starts with `remaining_credit = monthly_allowance`. Request bodies are
+validated (400), and an unknown `organizationId` returns 404. Checked with curl.
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- **Step 3 — Organizations and users.** `POST /organizations` and `POST /users`.
+- **Step 4 — Balance check.** `GET /users/{userId}/balance`.
 
 ## Open questions
 
