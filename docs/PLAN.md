@@ -85,6 +85,8 @@ it negative and still succeeds.
 ## Step 6 — Grants
 
 `POST /grants` writes the grant row and increments `remaining_credit`.
+*(Same load-change-save pattern as Step 5, so the same known risk applies — see
+DECISIONS 2026-09-29.)*
 
 *Verify:* a grant of 500 raises the balance by 500 and appears in the `grants` table.
 
@@ -107,6 +109,8 @@ cannot be tested without waiting a month.
 
 README covering the problem, the two-call flow, the diagram, how to run it, and a
 copy-paste curl walkthrough. A small set of tests over the usage flow.
+*(Windows note: in Windows PowerShell `curl` is an alias for `Invoke-WebRequest`,
+so the walkthrough must use `curl.exe` or show `Invoke-RestMethod` too.)*
 
 *Verify:* `mvn test` is green; a stranger can follow the README from clone to a
 working demo.
