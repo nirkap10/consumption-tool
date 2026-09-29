@@ -15,21 +15,28 @@ Step 3: `POST /organizations` and `POST /users`, both returning `201` with `{"id
 A new user starts with `remaining_credit = monthly_allowance`. Request bodies are
 validated (400), and an unknown `organizationId` returns 404. Checked with curl.
 
-Step 4 is done on branch `step-4-balance`, waiting for Nir to merge:
+Step 4 is done on branch `step-4-balance` (PR waiting for Nir to merge):
 `GET /users/{userId}/balance` returns `200 {"remainingCredit": N}`. Unknown user
 is 404, a malformed id is 400. Checked with curl.
+
+Step 5 is done on branch `step-5-usage`, built on top of `step-4-balance`, so merge
+Step 4 first: `POST /usage` writes the event row (with the user's organization id),
+lowers `remaining_credit` via `User.spend`, and returns `201 {"remainingCredit": N}`.
+Over-spending drives the balance negative and still succeeds. `occurredAt` defaults
+to now. Unknown user is 404; missing fields or `tokensUsed <= 0` are 400. Checked
+with curl and in the `usage_events` table.
 
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- **Step 5 — Usage.** `POST /usage`.
+- **Step 6 — Grants.** `POST /grants`.
 
 ## Open questions
 
 - Maven wrapper (`mvnw`): would let someone build without installing Maven. Not
   in the plan, so not added. Worth deciding before Step 9's README.
-- `User` has no way to change `remaining_credit` yet. Steps 5, 6 and 8 need one;
-  add it in Step 5 when the first caller exists.
+- Two usage reports for the same user at the same moment can lose one decrement
+  (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
 - Nothing blocking the design. The deferred items (transactions, idempotency, auth,
   customers) are all recorded in `DECISIONS.md` with their revisit triggers.
