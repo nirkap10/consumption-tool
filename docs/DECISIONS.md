@@ -245,3 +245,28 @@ the per-step approval isn't needed.
 
 **Kept:** One branch and one PR per step. Each step stays a small, readable unit
 in the history, and the mentor can still look at any PR afterwards.
+
+---
+
+## 2026-09-28 — Step 3: request DTOs, check-first 404, id-only responses
+
+**Decision:** Request bodies are Java records in a `dto/` package, validated with
+annotations (`@NotBlank`, `@NotNull`, `@PositiveOrZero`) so bad input gets a 400
+from Spring before our code runs. Business rules live in `service/`.
+
+`POST /users` checks that the organization exists before saving, and answers 404
+through Spring's built-in `ResponseStatusException` if it does not. The database
+foreign key stays as a safety net underneath.
+
+Both create endpoints return `201 Created` with only `{"id": "..."}`.
+`monthlyAllowance` may be 0; negative values are rejected.
+
+**Why:** DTOs keep the API shape separate from the table shape, so callers cannot
+set fields we own (`id`, `remaining_credit`, `created_at`). An explicit existence
+check reads as the rule it enforces; the id-only response is the minimum Step 3
+asks for.
+
+**Rejected:** Catching the database's `DataIntegrityViolationException` and turning
+it into a 404. That exception fires for any broken constraint, so telling "unknown
+organization" apart means parsing constraint names out of the message. Also
+rejected for now: a global exception handler class, and returning the full row.
