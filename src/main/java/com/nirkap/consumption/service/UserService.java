@@ -28,4 +28,9 @@ public class UserService {
         // A new user starts with their full allowance as credit.
         return userRepository.save(new User(organizationId, monthlyAllowance, monthlyAllowance));
     }
+
+    public User get(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
 }
