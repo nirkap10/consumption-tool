@@ -60,4 +60,9 @@ public class User {
     public Instant getCreatedAt() {
         return createdAt;
     }
+
+    // No floor at zero: usage has already happened, so the balance may go negative.
+    public void spend(long tokens) {
+        this.remainingCredit -= tokens;
+    }
 }

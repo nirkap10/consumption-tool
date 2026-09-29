@@ -284,3 +284,29 @@ number answers it. Whether to allow the call is the company's decision, not ours
 
 **Rejected:** A `hasCredit` boolean (that is us deciding) and returning the whole
 user row (more than the question needs). Easy to extend later without breaking v1.
+
+---
+
+## 2026-09-29 — Step 5: usage lowers the balance in Java, then saves
+
+**Decision:** `POST /usage` loads the user (404 if unknown), inserts the
+`usage_events` row with the user's `organization_id`, then calls `User.spend(tokens)`
+and saves the user. It returns `201 {"remainingCredit": N}`. `occurredAt` defaults to
+the current time when not sent. `tokensUsed` must be greater than 0; `serviceName` is
+required and at most 255 characters (the column size).
+
+**Why:** The most obvious code to read: load, change the object, save. It matches the
+entities-with-plain-fields style and needs no custom query.
+
+**Known risk:** This is read-change-write. If two usage reports for the same user run
+at the same moment, both can read the same balance and one decrement is lost. The
+event rows stay correct (raw events are the source of truth), only the cached
+`remaining_credit` drifts.
+
+**Rejected for now:** An atomic SQL update
+(`UPDATE users SET remaining_credit = remaining_credit - :tokens`), which avoids the
+lost update but needs a custom `@Modifying` query and a re-read to return the new
+balance.
+
+**Revisit when:** Same trigger as the transaction and idempotency entries, and fix
+them together.
