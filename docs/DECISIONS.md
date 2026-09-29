@@ -270,3 +270,17 @@ asks for.
 it into a 404. That exception fires for any broken constraint, so telling "unknown
 organization" apart means parsing constraint names out of the message. Also
 rejected for now: a global exception handler class, and returning the full row.
+
+---
+
+## 2026-09-29 — Step 4: balance returns only remainingCredit
+
+**Decision:** `GET /users/{userId}/balance` returns `200` with
+`{"remainingCredit": N}`. An unknown user is 404 (`findById` + `ResponseStatusException`,
+same pattern as Step 3); a path id that is not a UUID is rejected by Spring with 400.
+
+**Why:** The caller asks one question, "does this employee have credit?", and this
+number answers it. Whether to allow the call is the company's decision, not ours.
+
+**Rejected:** A `hasCredit` boolean (that is us deciding) and returning the whole
+user row (more than the question needs). Easy to extend later without breaking v1.
