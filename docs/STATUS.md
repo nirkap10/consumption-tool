@@ -2,7 +2,7 @@
 
 ## Where we are
 
-Steps 1, 2 and 3 done and merged into `main` (PR #1, #2 and #4).
+Steps 1 to 5 done and merged into `main` (PR #1, #2, #4, #5 and #6).
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -15,12 +15,10 @@ Step 3: `POST /organizations` and `POST /users`, both returning `201` with `{"id
 A new user starts with `remaining_credit = monthly_allowance`. Request bodies are
 validated (400), and an unknown `organizationId` returns 404. Checked with curl.
 
-Step 4 is done on branch `step-4-balance` (PR waiting for Nir to merge):
-`GET /users/{userId}/balance` returns `200 {"remainingCredit": N}`. Unknown user
+Step 4: `GET /users/{userId}/balance` returns `200 {"remainingCredit": N}`. Unknown user
 is 404, a malformed id is 400. Checked with curl.
 
-Step 5 is done on branch `step-5-usage`, built on top of `step-4-balance`, so merge
-Step 4 first: `POST /usage` writes the event row (with the user's organization id),
+Step 5: `POST /usage` writes the event row (with the user's organization id),
 lowers `remaining_credit` via `User.spend`, and returns `201 {"remainingCredit": N}`.
 Over-spending drives the balance negative and still succeeds. `occurredAt` defaults
 to now. Unknown user is 404; missing fields or `tokensUsed <= 0` are 400. Checked
@@ -38,5 +36,7 @@ PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
   in the plan, so not added. Worth deciding before Step 9's README.
 - Two usage reports for the same user at the same moment can lose one decrement
   (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
+- `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
+  Decide whether to commit it or add it to `.gitignore`.
 - Nothing blocking the design. The deferred items (transactions, idempotency, auth,
   customers) are all recorded in `DECISIONS.md` with their revisit triggers.

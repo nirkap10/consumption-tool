@@ -310,3 +310,18 @@ balance.
 
 **Revisit when:** Same trigger as the transaction and idempotency entries, and fix
 them together.
+
+---
+
+## 2026-09-29 — A step may branch from the previous, unmerged step
+
+**Decision:** When a step needs code from a step whose PR is not merged yet, its
+branch is created from that step's branch instead of from `main`. The PRs are merged
+in order. Step 5 (`step-5-usage`) was branched from Step 4 (`step-4-balance`) this
+way; PR #5 and PR #6 were merged in that order.
+
+**Why:** Keeps one branch and one PR per step without waiting for each merge before
+starting the next step.
+
+**Kept:** One branch and one PR per step. Merge order matters: the earlier step
+first, so the later PR only shows its own changes.
