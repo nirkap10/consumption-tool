@@ -2,7 +2,7 @@
 
 ## Where we are
 
-Steps 1 to 5 done and merged into `main` (PR #1, #2, #4, #5 and #6).
+Steps 1 to 6 done and merged into `main` (PR #1, #2, #4, #5, #6 and #8).
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -24,7 +24,7 @@ Over-spending drives the balance negative and still succeeds. `occurredAt` defau
 to now. Unknown user is 404; missing fields or `tokensUsed <= 0` are 400. Checked
 with curl and in the `usage_events` table.
 
-Step 6 (branch `step-6-grants`, PR open): `POST /grants` writes the grant row (with
+Step 6: `POST /grants` writes the grant row (with
 the user's organization id), raises `remaining_credit` via `User.grant`, and returns
 `201 {"remainingCredit": N}`. `reason` is optional; `granted_at` is set by the
 database. Unknown user is 404; missing or non-positive `amount` is 400. Checked with
@@ -44,5 +44,7 @@ PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
   balance change (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
 - `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
   Decide whether to commit it or add it to `.gitignore`.
+- The GitHub CLI (`gh`) is not installed, so Claude cannot open PRs; Nir opens
+  them in the browser. `winget install GitHub.cli` + `gh auth login` would fix it.
 - Nothing blocking the design. The deferred items (transactions, idempotency, auth,
   customers) are all recorded in `DECISIONS.md` with their revisit triggers.
