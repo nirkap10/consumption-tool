@@ -65,4 +65,7 @@ public class User {
     public void spend(long tokens) {
         this.remainingCredit -= tokens;
     }
+    public void grant(long tokens) {
+        this.remainingCredit += tokens;
+    }
 }

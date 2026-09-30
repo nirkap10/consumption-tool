@@ -1,4 +1,4 @@
-# Status — 2026-09-29
+# Status — 2026-09-30
 
 ## Where we are
 
@@ -24,18 +24,24 @@ Over-spending drives the balance negative and still succeeds. `occurredAt` defau
 to now. Unknown user is 404; missing fields or `tokensUsed <= 0` are 400. Checked
 with curl and in the `usage_events` table.
 
+Step 6 (branch `step-6-grants`, PR open): `POST /grants` writes the grant row (with
+the user's organization id), raises `remaining_credit` via `User.grant`, and returns
+`201 {"remainingCredit": N}`. `reason` is optional; `granted_at` is set by the
+database. Unknown user is 404; missing or non-positive `amount` is 400. Checked with
+curl and in the `grants` table. Written by Nir, fixed up with Claude.
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- **Step 6 — Grants.** `POST /grants`.
+- **Step 7 — Monthly report.** `GET /reports/monthly`.
 
 ## Open questions
 
 - Maven wrapper (`mvnw`): would let someone build without installing Maven. Not
   in the plan, so not added. Worth deciding before Step 9's README.
-- Two usage reports for the same user at the same moment can lose one decrement
-  (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
+- Two usage reports or grants for the same user at the same moment can lose one
+  balance change (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
 - `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
   Decide whether to commit it or add it to `.gitignore`.
 - Nothing blocking the design. The deferred items (transactions, idempotency, auth,
