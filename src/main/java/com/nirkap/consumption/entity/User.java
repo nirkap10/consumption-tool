@@ -68,4 +68,9 @@ public class User {
     public void grant(long tokens) {
         this.remainingCredit += tokens;
     }
+
+    // Monthly reset: no rollover, so unused credit and grants are dropped.
+    public void resetCredit() {
+        this.remainingCredit = monthlyAllowance;
+    }
 }
