@@ -342,3 +342,18 @@ no earlier "real" time for the client to send.
 
 **Known risk:** Same lost-update and no-transaction risk as Step 5 (see 2026-09-29).
 Fix them together.
+
+---
+
+## 2026-09-30 — Class names are singular
+
+**Decision:** Controllers, services and DTOs are named after one thing, in the
+singular: `GrantController`, `GrantService`, `CreateGrantRequest` — matching
+`UserController` and `UsageService`. URL paths stay plural where the API says so
+(`/grants`, `/users`).
+
+**Why:** One consistent rule is easier to follow than mixing both. Step 6 was first
+written as `GrantsController`/`GrantsService` and renamed before merging.
+
+**Rejected:** Plural class names (`GrantsService`). Nothing wrong with them, but the
+existing classes were already singular.
