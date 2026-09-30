@@ -357,3 +357,58 @@ written as `GrantsController`/`GrantsService` and renamed before merging.
 
 **Rejected:** Plural class names (`GrantsService`). Nothing wrong with them, but the
 existing classes were already singular.
+
+---
+
+## 2026-09-30 — Docs are updated directly on main
+
+**Decision:** Updates to `docs/` (STATUS, DECISIONS, PLAN) are committed and pushed
+straight to `main`, without a branch or pull request. This replaces the
+`docs-after-step-N` branches used for PR #7 and PR #9.
+
+**Why:** Nir's call — a docs update is not a step and does not need its own PR.
+
+**Kept:** One branch and one PR per code step.
+
+---
+
+## 2026-09-30 — Step 7: report shape, UTC months, exactly one scope
+
+**Decision:** `GET /reports/monthly` returns
+`{"month", "totalTokens", "byService": {name: tokens}, "byUser": {userId: tokens}}`.
+`byUser` is only present for organization reports (left out of the JSON for user
+reports). Exactly one of `userId` / `organizationId` is required — neither or both
+is 400. `month` is `YYYY-MM`, parsed by Spring into a `YearMonth`, and defaults to
+the current month. Months are calendar months in **UTC**. A month with no usage
+returns `totalTokens: 0` and empty maps. Unknown user or organization is 404.
+
+The sums come from three `GROUP BY` queries on `UsageEventRepository`;
+`totalTokens` is the sum of `byService`, added up in Java.
+
+**Why:** Maps are the shortest shape to read and build (Nir chose them over lists of
+objects). UTC is the one time zone the server can pick without knowing the
+company's. Rejecting "both ids" avoids guessing which one the caller meant.
+
+**Rejected:** Lists of `{name, tokens}` objects (easier to extend, longer to read);
+a per-organization time zone (would need a new column).
+
+---
+
+## 2026-09-30 — Step 8: reset loads every user, changes it, saves all
+
+**Decision:** The reset loads all users, calls `User.resetCredit()` on each
+(`remaining_credit = monthly_allowance`) and saves them with `saveAll`. The
+`@Scheduled` job runs at midnight UTC on the 1st (same UTC as the reports) and
+`POST /admin/reset` runs the same method on demand, returning `{"usersReset": N}`.
+`@EnableScheduling` is on the application class.
+
+**Why:** Same load-change-save pattern as usage and grants; no custom query needed.
+Fine at our number of users.
+
+**Known risk:** A usage report or grant for a user that lands while the reset is
+running can be overwritten. Same family as the lost-update risk in 2026-09-29.
+
+**Rejected for now:** A single `UPDATE users SET remaining_credit = monthly_allowance`
+query — atomic and faster, but needs `@Modifying` plus `@Transactional`, and
+transactions are still deferred. `/admin/reset` is open like every other endpoint
+(no auth in v1).

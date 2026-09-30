@@ -30,18 +30,35 @@ the user's organization id), raises `remaining_credit` via `User.grant`, and ret
 database. Unknown user is 404; missing or non-positive `amount` is 400. Checked with
 curl and in the `grants` table. Written by Nir, fixed up with Claude.
 
+Steps 7 and 8 are done and pushed, **not merged yet**. Step 8's branch is built on
+Step 7's, so merge in that order. PRs still to be opened in the browser:
+- `step-7-report` — https://github.com/nirkap10/consumption-tool/pull/new/step-7-report
+- `step-8-reset` — https://github.com/nirkap10/consumption-tool/pull/new/step-8-reset
+
+Step 7: `GET /reports/monthly` with exactly one of `userId` / `organizationId`, and
+an optional `month` (`YYYY-MM`, UTC, defaults to the current month). Returns
+`month`, `totalTokens` and `byService`; `byUser` only for organization reports.
+Neither or both ids, or a bad month, is 400; unknown id is 404. Checked with curl
+against seeded events across two users, two services, three months and a second
+organization, including events at 23:59:59 and 00:00:00 on the month boundary.
+
+Step 8: a `@Scheduled` job at midnight UTC on the 1st, plus `POST /admin/reset`
+(returns `{"usersReset": N}`), sets every `remaining_credit` back to
+`monthly_allowance`. Checked with curl: a spent-and-granted balance and a negative
+balance both returned to their allowance; usage events were untouched.
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- **Step 7 — Monthly report.** `GET /reports/monthly`.
+- **Step 9 — README and tests.**
 
 ## Open questions
 
 - Maven wrapper (`mvnw`): would let someone build without installing Maven. Not
   in the plan, so not added. Worth deciding before Step 9's README.
 - Two usage reports or grants for the same user at the same moment can lose one
-  balance change (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
+  balance change; the same applies to a usage report arriving during a reset (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
 - `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
   Decide whether to commit it or add it to `.gitignore`.
 - The GitHub CLI (`gh`) is not installed, so Claude cannot open PRs; Nir opens
