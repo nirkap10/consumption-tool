@@ -2,7 +2,7 @@
 
 ## Where we are
 
-Steps 1 to 6 done and merged into `main` (PR #1, #2, #4, #5, #6 and #8).
+Steps 1 to 8 done and merged into `main` (PR #1, #2, #4, #5, #6, #8, #10 and #11).
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -29,11 +29,6 @@ the user's organization id), raises `remaining_credit` via `User.grant`, and ret
 `201 {"remainingCredit": N}`. `reason` is optional; `granted_at` is set by the
 database. Unknown user is 404; missing or non-positive `amount` is 400. Checked with
 curl and in the `grants` table. Written by Nir, fixed up with Claude.
-
-Steps 7 and 8 are done and pushed, **not merged yet**. Step 8's branch is built on
-Step 7's, so merge in that order. PRs still to be opened in the browser:
-- `step-7-report` — https://github.com/nirkap10/consumption-tool/pull/new/step-7-report
-- `step-8-reset` — https://github.com/nirkap10/consumption-tool/pull/new/step-8-reset
 
 Step 7: `GET /reports/monthly` with exactly one of `userId` / `organizationId`, and
 an optional `month` (`YYYY-MM`, UTC, defaults to the current month). Returns
