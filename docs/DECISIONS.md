@@ -325,3 +325,20 @@ starting the next step.
 
 **Kept:** One branch and one PR per step. Merge order matters: the earlier step
 first, so the later PR only shows its own changes.
+
+---
+
+## 2026-09-30 — Step 6: grants mirror usage; the server sets the time
+
+**Decision:** `POST /grants` loads the user (404 if unknown), inserts the `grants`
+row with the user's `organization_id`, then calls `User.grant(amount)` and saves the
+user. It returns `201 {"remainingCredit": N}`. `amount` must be greater than 0;
+`reason` is optional and at most 255 characters. The request has no time field:
+`granted_at` is set by `@CreationTimestamp`.
+
+**Why:** Same load-change-save shape as Step 5, so it reads the same. Unlike usage,
+a grant is not reported after the fact — the call itself is the grant — so there is
+no earlier "real" time for the client to send.
+
+**Known risk:** Same lost-update and no-transaction risk as Step 5 (see 2026-09-29).
+Fix them together.
