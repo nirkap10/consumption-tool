@@ -2,7 +2,8 @@
 
 ## Where we are
 
-Steps 1 to 8 done and merged into `main` (PR #1, #2, #4, #5, #6, #8, #10 and #11).
+Steps 1 to 9 done and merged into `main` (PR #1, #2, #4, #5, #6, #8, #10, #11 and #12).
+**v1 is complete.**
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -42,21 +43,18 @@ Step 8: a `@Scheduled` job at midnight UTC on the 1st, plus `POST /admin/reset`
 `monthly_allowance`. Checked with curl: a spent-and-granted balance and a negative
 balance both returned to their allowance; usage events were untouched.
 
-Step 9 is done and pushed, **not merged yet** (branch `step-9-readme-tests`; open the PR
-at https://github.com/nirkap10/consumption-tool/pull/new/step-9-readme-tests).
-The README covers the problem, the two-call flow, the API, how to run it, and a
+Step 9: the README covers the problem, the two-call flow, the API, how to run it, and a
 copy-paste walkthrough in both Bash and Windows PowerShell — both were run as
 written and give the numbers shown. `UsageFlowTest` has 5 tests over the usage flow
 (starting balance, exact decrement, negative balance, 404, 400); `mvn test` is green.
 The tests need the docker-compose Postgres running.
 
-With Step 9 merged, every step in `PLAN.md` is done: **v1 is complete.**
-
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- Merge Step 9. Then decide what comes after v1 — `PLAN.md` has no steps left.
+- Pick what comes after v1. `PLAN.md` lists five candidates under "After v1";
+  none is scheduled yet.
 
 ## Open questions
 

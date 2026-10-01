@@ -139,6 +139,23 @@ curl -X POST localhost:8080/api/v1/grants -H 'Content-Type: application/json' \
 curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, service "chat"
 ```
 
+## After v1 — candidates, not scheduled
+
+All nine steps are done. These are the decisions waiting, most important first.
+None is a step yet; each becomes one when Nir picks it.
+
+1. **Trustworthy balance** — `@Transactional` on the write services, an atomic
+   balance update, and an event id + unique constraint on `/usage` for idempotency.
+   Do them together (DECISIONS 2026-09-23 and 2026-09-29).
+2. **Auth** — needed before the tool runs anywhere but localhost; `/admin/reset`
+   is open today.
+3. **Customers** — and with them, whether to refactor users into a shared
+   "account" concept (DECISIONS 2026-09-23).
+4. **Time zones** — reports and the reset use UTC months; decide whether each
+   organization needs its own time zone.
+5. **Deployment and CI** — where it runs, plus an automated test run (which would
+   bring Testcontainers back; DECISIONS 2026-10-01).
+
 ## Out of scope for v1
 
 Auth, transactional writes, idempotency, per-model pricing or USD, customers, any
