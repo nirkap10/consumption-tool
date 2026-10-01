@@ -412,3 +412,28 @@ running can be overwritten. Same family as the lost-update risk in 2026-09-29.
 query — atomic and faster, but needs `@Modifying` plus `@Transactional`, and
 transactions are still deferred. `/admin/reset` is open like every other endpoint
 (no auth in v1).
+
+---
+
+## 2026-10-01 — Step 9: tests run against the docker-compose Postgres
+
+**Decision:** `UsageFlowTest` is a `@SpringBootTest` with `MockMvc`: it starts the
+whole app and sends real HTTP-shaped requests through the controllers, services and
+repositories into the same Postgres that `docker compose up -d` starts. Each test
+creates its own organization and user, so tests never depend on each other or on
+data already in the database. Five tests cover the usage flow: starting balance,
+exact decrement, negative balance, unknown user (404), zero tokens (400).
+
+The README walkthrough is given twice — Bash with `curl`, and Windows PowerShell
+with `Invoke-RestMethod` — because PowerShell's `curl` is a different command and
+its JSON quoting differs.
+
+**Why:** Testing through the real stack and the real database is the most honest
+check with the least setup — no new dependencies.
+
+**Known cost:** `mvn test` needs Docker running, and test rows accumulate in the
+local database (harmless: every test uses fresh ids).
+
+**Rejected for now:** Testcontainers (a throwaway Postgres per test run — cleaner,
+but a new dependency) and an in-memory H2 database (fast, but not Postgres, so it
+can pass where Postgres would fail). Revisit Testcontainers if tests ever run in CI.

@@ -1,4 +1,4 @@
-# Status — 2026-09-30
+# Status — 2026-10-01
 
 ## Where we are
 
@@ -42,16 +42,26 @@ Step 8: a `@Scheduled` job at midnight UTC on the 1st, plus `POST /admin/reset`
 `monthly_allowance`. Checked with curl: a spent-and-granted balance and a negative
 balance both returned to their allowance; usage events were untouched.
 
+Step 9 is done and pushed, **not merged yet** (branch `step-9-readme-tests`; open the PR
+at https://github.com/nirkap10/consumption-tool/pull/new/step-9-readme-tests).
+The README covers the problem, the two-call flow, the API, how to run it, and a
+copy-paste walkthrough in both Bash and Windows PowerShell — both were run as
+written and give the numbers shown. `UsageFlowTest` has 5 tests over the usage flow
+(starting balance, exact decrement, negative balance, 404, 400); `mvn test` is green.
+The tests need the docker-compose Postgres running.
+
+With Step 9 merged, every step in `PLAN.md` is done: **v1 is complete.**
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- **Step 9 — README and tests.**
+- Merge Step 9. Then decide what comes after v1 — `PLAN.md` has no steps left.
 
 ## Open questions
 
-- Maven wrapper (`mvnw`): would let someone build without installing Maven. Not
-  in the plan, so not added. Worth deciding before Step 9's README.
+- Maven wrapper (`mvnw`): would let someone build without installing Maven. Still
+  not added; the README tells people to install Maven.
 - Two usage reports or grants for the same user at the same moment can lose one
   balance change; the same applies to a usage report arriving during a reset (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
 - `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
