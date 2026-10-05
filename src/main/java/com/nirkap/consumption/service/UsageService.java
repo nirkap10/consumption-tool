@@ -14,10 +14,6 @@ import com.nirkap.consumption.repository.UserRepository;
 @Service
 public class UsageService {
 
-    // duplicate is true when this eventId was already recorded and nothing changed.
-    public record Result(long remainingCredit, boolean duplicate) {
-    }
-
     private final UserService userService;
     private final UserRepository userRepository;
     private final UsageEventRepository usageEventRepository;
@@ -34,11 +30,11 @@ public class UsageService {
     // A repeated eventId is a retry of a report we already have, so it changes
     // nothing and just returns the current balance.
     @Transactional
-    public Result record(String eventId, UUID userId, String serviceName, long tokensUsed, Instant occurredAt) {
+    public BalanceResult record(String eventId, UUID userId, String serviceName, long tokensUsed, Instant occurredAt) {
         User user = userService.get(userId);
 
         if (usageEventRepository.existsByEventId(eventId)) {
-            return new Result(userRepository.findRemainingCredit(user.getId()), true);
+            return new BalanceResult(userRepository.findRemainingCredit(user.getId()), true);
         }
 
         Instant when = occurredAt != null ? occurredAt : Instant.now();
@@ -46,6 +42,6 @@ public class UsageService {
                 new UsageEvent(eventId, user.getId(), user.getOrganizationId(), serviceName, tokensUsed, when));
 
         userRepository.spend(user.getId(), tokensUsed);
-        return new Result(userRepository.findRemainingCredit(user.getId()), false);
+        return new BalanceResult(userRepository.findRemainingCredit(user.getId()), false);
     }
 }

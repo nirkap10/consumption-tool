@@ -20,6 +20,10 @@ public class Grant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // The caller's id for this grant; unique, so a retry is stored only once.
+    // Null on rows from before it was added.
+    private String eventId;
+
     @Column(nullable = false)
     private UUID userId;
 
@@ -37,7 +41,8 @@ public class Grant {
     protected Grant() {
     }
 
-    public Grant(UUID userId, UUID organizationId, long amount, String reason) {
+    public Grant(String eventId, UUID userId, UUID organizationId, long amount, String reason) {
+        this.eventId = eventId;
         this.userId = userId;
         this.organizationId = organizationId;
         this.amount = amount;
@@ -46,6 +51,10 @@ public class Grant {
 
     public Long getId() {
         return id;
+    }
+
+    public String getEventId() {
+        return eventId;
     }
 
     public UUID getUserId() {

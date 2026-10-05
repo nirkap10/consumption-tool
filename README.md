@@ -48,12 +48,13 @@ Base path `/api/v1`. Errors: `400` on bad input, `404` on an unknown id.
 | POST | `/users` | `organizationId`, `monthlyAllowance` | `201 {"id"}` |
 | GET  | `/users/{userId}/balance` | — | `{"remainingCredit"}` |
 | POST | `/usage` | `eventId`, `userId`, `serviceName`, `tokensUsed`, optional `occurredAt` | `201 {"remainingCredit"}`, or `200` for a repeated `eventId` |
-| POST | `/grants` | `userId`, `amount`, optional `reason` | `201 {"remainingCredit"}` |
+| POST | `/grants` | `eventId`, `userId`, `amount`, optional `reason` | `201 {"remainingCredit"}`, or `200` for a repeated `eventId` |
 | GET  | `/reports/monthly` | `userId` **or** `organizationId`, optional `month` (`YYYY-MM`) | report, see below |
 | POST | `/admin/reset` | — | `{"usersReset"}` |
 
-`eventId` is any string the caller picks, unique per real usage. Sending the same
-`eventId` again (a retry) changes nothing and returns `200` with the current balance.
+`eventId` is any string the caller picks, unique per real usage or grant. Sending
+the same `eventId` again (a retry) changes nothing and returns `200` with the
+current balance.
 
 The monthly report (months are UTC; default is the current month):
 
@@ -107,7 +108,7 @@ curl localhost:8080/api/v1/users/<user>/balance                     # 750
 
 # extra credit, the report, and the monthly reset
 curl -X POST localhost:8080/api/v1/grants -H 'Content-Type: application/json' \
-  -d '{"userId":"<user>","amount":500,"reason":"extra budget"}'     # 1250
+  -d '{"eventId":"<new-id>","userId":"<user>","amount":500,"reason":"extra budget"}'     # 1250
 curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, service "chat"
 curl -X POST localhost:8080/api/v1/admin/reset                      # back to 1000
 curl localhost:8080/api/v1/users/<user>/balance                     # 1000
@@ -126,7 +127,7 @@ Invoke-RestMethod -Method Post "$api/usage" -ContentType "application/json" `
   -Body "{`"eventId`":`"$(New-Guid)`",`"userId`":`"$($user.id)`",`"serviceName`":`"chat`",`"tokensUsed`":250}"   # 750
 
 Invoke-RestMethod -Method Post "$api/grants" -ContentType "application/json" `
-  -Body "{`"userId`":`"$($user.id)`",`"amount`":500,`"reason`":`"extra budget`"}"   # 1250
+  -Body "{`"eventId`":`"$(New-Guid)`",`"userId`":`"$($user.id)`",`"amount`":500,`"reason`":`"extra budget`"}"   # 1250
 Invoke-RestMethod "$api/reports/monthly?organizationId=$($org.id)" | ConvertTo-Json
 Invoke-RestMethod -Method Post "$api/admin/reset"
 Invoke-RestMethod "$api/users/$($user.id)/balance"                  # 1000
@@ -141,12 +142,12 @@ mvn test
 
 The tests start the whole app and talk to the Postgres from docker-compose, so
 Docker must be running. They cover the usage flow: starting balance, usage lowering
-it, over-spending going negative, a repeated `eventId` counted once, unknown user
-(404) and invalid input (400).
+it, over-spending going negative, a repeated `eventId` counted once (for usage and
+grants), a grant raising it, unknown user (404) and invalid input (400).
 
 ## Not built (on purpose)
 
-Auth, a transactional reset, idempotency on `/grants`, pricing or currency, customers,
+Auth, a transactional reset, pricing or currency, customers,
 a UI, alerts, forecasting, rate limiting, an SDK, deployment. Each is recorded in
 `docs/DECISIONS.md` with why it was left out and when to revisit it.
 

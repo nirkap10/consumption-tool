@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nirkap.consumption.dto.RecordUsageRequest;
+import com.nirkap.consumption.service.BalanceResult;
 import com.nirkap.consumption.service.UsageService;
 
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ public class UsageController {
     // 201 when the report is new, 200 when this eventId was already recorded.
     @PostMapping("/api/v1/usage")
     public ResponseEntity<Map<String, Long>> record(@Valid @RequestBody RecordUsageRequest request) {
-        UsageService.Result result = usageService.record(request.eventId(),
+        BalanceResult result = usageService.record(request.eventId(),
                 request.userId(), request.serviceName(), request.tokensUsed(), request.occurredAt());
         HttpStatus status = result.duplicate() ? HttpStatus.OK : HttpStatus.CREATED;
         return ResponseEntity.status(status).body(Map.of("remainingCredit", result.remainingCredit()));
