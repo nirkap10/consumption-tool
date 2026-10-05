@@ -5,6 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,7 +41,7 @@ class UsageFlowTest {
         String userId = createUser(1000);
 
         mvc.perform(postJson("/api/v1/usage",
-                "{\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":100}"))
+                "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":100}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.remainingCredit").value(900));
 
@@ -52,7 +54,7 @@ class UsageFlowTest {
         String userId = createUser(100);
 
         mvc.perform(postJson("/api/v1/usage",
-                "{\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":250}"))
+                "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":250}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.remainingCredit").value(-150));
     }
@@ -60,7 +62,7 @@ class UsageFlowTest {
     @Test
     void usageForUnknownUserIs404() throws Exception {
         mvc.perform(postJson("/api/v1/usage",
-                "{\"userId\":\"00000000-0000-0000-0000-000000000000\",\"serviceName\":\"chat\",\"tokensUsed\":10}"))
+                "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"00000000-0000-0000-0000-000000000000\",\"serviceName\":\"chat\",\"tokensUsed\":10}"))
                 .andExpect(status().isNotFound());
     }
 
@@ -69,7 +71,32 @@ class UsageFlowTest {
         String userId = createUser(1000);
 
         mvc.perform(postJson("/api/v1/usage",
-                "{\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":0}"))
+                "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":0}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void sameEventIdTwiceIsCountedOnce() throws Exception {
+        String userId = createUser(1000);
+        String body = "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId
+                + "\",\"serviceName\":\"chat\",\"tokensUsed\":100}";
+
+        mvc.perform(postJson("/api/v1/usage", body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(900));
+
+        // The retry: same eventId, so 200 and the balance does not move again.
+        mvc.perform(postJson("/api/v1/usage", body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.remainingCredit").value(900));
+    }
+
+    @Test
+    void usageWithoutEventIdIs400() throws Exception {
+        String userId = createUser(1000);
+
+        mvc.perform(postJson("/api/v1/usage",
+                "{\"userId\":\"" + userId + "\",\"serviceName\":\"chat\",\"tokensUsed\":10}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -85,6 +112,11 @@ class UsageFlowTest {
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return JsonPath.read(userJson, "$.id");
+    }
+
+    // A fresh id per usage report, the way the company's system would make one.
+    private static String newEventId() {
+        return UUID.randomUUID().toString();
     }
 
     private static MockHttpServletRequestBuilder postJson(String url, String body) {

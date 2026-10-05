@@ -18,6 +18,10 @@ public class UsageEvent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // The caller's id for this report; unique, so a retry is stored only once.
+    // Null on rows from before it was added.
+    private String eventId;
+
     @Column(nullable = false)
     private UUID userId;
 
@@ -36,7 +40,9 @@ public class UsageEvent {
     protected UsageEvent() {
     }
 
-    public UsageEvent(UUID userId, UUID organizationId, String serviceName, long tokensUsed, Instant occurredAt) {
+    public UsageEvent(String eventId, UUID userId, UUID organizationId, String serviceName, long tokensUsed,
+            Instant occurredAt) {
+        this.eventId = eventId;
         this.userId = userId;
         this.organizationId = organizationId;
         this.serviceName = serviceName;
@@ -46,6 +52,10 @@ public class UsageEvent {
 
     public Long getId() {
         return id;
+    }
+
+    public String getEventId() {
+        return eventId;
     }
 
     public UUID getUserId() {

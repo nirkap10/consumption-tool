@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public record RecordUsageRequest(
+        @NotBlank @Size(max = 255) String eventId,
         @NotNull UUID userId,
         @NotBlank @Size(max = 255) String serviceName,
         @NotNull @Positive Long tokensUsed,
