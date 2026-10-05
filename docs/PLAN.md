@@ -144,9 +144,8 @@ curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, servi
 All nine steps are done. These are the decisions waiting, most important first.
 None is a step yet; each becomes one when Nir picks it.
 
-1. **Trustworthy balance** — `@Transactional` on the write services, an atomic
-   balance update, and an event id + unique constraint on `/usage` for idempotency.
-   Do them together (DECISIONS 2026-09-23 and 2026-09-29).
+1. ~~**Trustworthy balance**~~ — **done** (PR #13, DECISIONS 2026-10-05) for usage
+   and grants. Still open: the monthly reset is not yet one atomic update.
 2. **Auth** — needed before the tool runs anywhere but localhost; `/admin/reset`
    is open today.
 3. **Customers** — and with them, whether to refactor users into a shared

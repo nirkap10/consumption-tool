@@ -65,7 +65,8 @@ survives a user changing organization.
 - **users** — `id` UUID PK, `organization_id` FK, `monthly_allowance` BIGINT,
   `remaining_credit` BIGINT, `created_at`
 - **usage_events** — `id` BIGSERIAL PK, `user_id` FK, `organization_id` FK,
-  `service_name`, `tokens_used` BIGINT, `occurred_at`
+  `service_name`, `tokens_used` BIGINT, `occurred_at`, `event_id` (unique, the
+  caller's id for the report)
 - **grants** — `id` BIGSERIAL PK, `user_id` FK, `organization_id` FK,
   `amount` BIGINT, `reason`, `granted_at`
 
@@ -81,7 +82,7 @@ Base path `/api/v1`.
 | POST | `/organizations` | `name` | — |
 | POST | `/users` | `organizationId`, `monthlyAllowance` | — |
 | GET  | `/users/{userId}/balance` | `userId` (path) | — |
-| POST | `/usage` | `userId`, `serviceName`, `tokensUsed` | `occurredAt` |
+| POST | `/usage` | `eventId`, `userId`, `serviceName`, `tokensUsed` | `occurredAt` |
 | POST | `/grants` | `userId`, `amount` | `reason` |
 | GET  | `/reports/monthly` | one of `userId` / `organizationId` | `month` (`YYYY-MM`) |
 
@@ -89,11 +90,13 @@ Base path `/api/v1`.
 wherever a row is written. Errors: 400 on validation, 404 on unknown id.
 
 `POST /usage` **always records**, even with insufficient credit — the usage
-already happened, and the balance is allowed to go negative.
+already happened, and the balance is allowed to go negative. A repeated
+`eventId` is a retry: nothing changes, and the answer is `200` with the current
+balance (`201` for a new report).
 
 ## Deliberately deferred — do not add these unasked
 
-Auth · transactional writes · idempotency on `/usage` · per-model pricing or USD ·
+Auth · a transactional reset · idempotency on `/grants` · per-model pricing or USD ·
 customers · any UI · alerts · forecasting · rate limiting · an SDK · deployment.
 
 Each of these has an entry in `docs/DECISIONS.md` with the reasoning and the

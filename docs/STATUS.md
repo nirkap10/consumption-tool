@@ -1,9 +1,10 @@
-# Status — 2026-10-01
+# Status — 2026-10-05
 
 ## Where we are
 
 Steps 1 to 9 done and merged into `main` (PR #1, #2, #4, #5, #6, #8, #10, #11 and #12).
-**v1 is complete.**
+**v1 is complete.** After v1, item 1 of PLAN's list ("Trustworthy balance") is
+done and merged (PR #13).
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -49,22 +50,32 @@ written and give the numbers shown. `UsageFlowTest` has 5 tests over the usage f
 (starting balance, exact decrement, negative balance, 404, 400); `mvn test` is green.
 The tests need the docker-compose Postgres running.
 
+Trustworthy balance (PR #13, branch `trustworthy-balance`): usage and grants each
+run in one transaction and change the balance with a single SQL `UPDATE`
+(`UserRepository.spend()` / `addCredit()`) — the transaction and the usage update
+written by Nir, checked by Claude. `POST /usage` now requires an `eventId`; a
+repeated one returns `200` with the current balance and changes nothing (`V5`
+adds `event_id` with a unique constraint). Grants take no `eventId`. README
+updated. `UsageFlowTest` now has 8 tests (adds: same `eventId` twice, missing
+`eventId`, a grant); `mvn test` is green.
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
 ## Next
 
-- Pick what comes after v1. `PLAN.md` lists five candidates under "After v1";
-  none is scheduled yet.
+- Pick the next after-v1 item from `PLAN.md` (auth is next in order).
+- Smaller leftover from item 1: make the monthly reset one atomic `UPDATE`
+  inside a transaction.
 
 ## Open questions
 
 - Maven wrapper (`mvnw`): would let someone build without installing Maven. Still
   not added; the README tells people to install Maven.
-- Two usage reports or grants for the same user at the same moment can lose one
-  balance change; the same applies to a usage report arriving during a reset (see DECISIONS 2026-09-29). Revisit together with transactions and idempotency.
+- A usage report or grant arriving while the monthly reset runs can still be
+  overwritten (see DECISIONS 2026-10-05). Usage and grants on their own are safe now.
 - `notes/` (Nir's learning notes, e.g. `notes/step-3-explained.md`) is untracked.
   Decide whether to commit it or add it to `.gitignore`.
 - The GitHub CLI (`gh`) is not installed, so Claude cannot open PRs; Nir opens
   them in the browser. `winget install GitHub.cli` + `gh auth login` would fix it.
-- Nothing blocking the design. The deferred items (transactions, idempotency, auth,
-  customers) are all recorded in `DECISIONS.md` with their revisit triggers.
+- Nothing blocking the design. The deferred items (auth, a transactional reset,
+  idempotency on grants, customers) are all recorded in `DECISIONS.md`.

@@ -437,3 +437,43 @@ local database (harmless: every test uses fresh ids).
 **Rejected for now:** Testcontainers (a throwaway Postgres per test run — cleaner,
 but a new dependency) and an in-memory H2 database (fast, but not Postgres, so it
 can pass where Postgres would fail). Revisit Testcontainers if tests ever run in CI.
+
+---
+
+## 2026-10-05 — Trustworthy balance: transactions, atomic updates, eventId
+
+**Decision:** `UsageService.record()` and `GrantService.create()` are
+`@Transactional`: the event or grant row and the balance change are saved
+together or not at all. The balance changes in one SQL `UPDATE`
+(`UserRepository.spend()` / `addCredit()`), then is read back with
+`findRemainingCredit()`. `User.spend()` and `User.grant()` are removed.
+
+`POST /usage` requires an `eventId`: a string the caller picks, unique per real
+usage, at most 255 characters. If that `eventId` is already stored, nothing
+changes and the answer is `200 {"remainingCredit": N}`; a new report is `201`.
+`V5` adds `usage_events.event_id` with a unique constraint; rows from before it
+are `NULL`. The service returns a small `UsageService.Result(remainingCredit,
+duplicate)` so the controller can pick the status code.
+
+This supersedes "Transactional write deferred" and "Idempotency on /usage
+deferred" (2026-09-23), and the known lost-update risk of Step 5 and Step 6
+(2026-09-29, 2026-09-30).
+
+**Why:** Item 1 of the after-v1 list. A failed second write, two requests at the
+same moment, or a network retry could each leave `remaining_credit` wrong
+without anyone noticing. A retry is not an error, so it gets a success answer:
+the caller only needs to know the usage is recorded.
+
+**Rejected:** Answering a duplicate with 409 (the caller would think it failed).
+A UUID-typed `eventId` (the id is the caller's, in whatever format it uses). An
+optional `eventId` (callers would skip it, and retries would count twice again).
+An `eventId` on grants: Nir's call — they are rare admin calls, and a double
+grant is visible in the `grants` table.
+
+**Known risk:** Two copies of the same `eventId` arriving at the exact same
+moment both pass the existence check; the unique constraint rejects the second
+insert, which rolls back and returns 500. The balance stays correct, and the
+caller's next retry gets 200. The monthly reset is still load, change, save, so
+a usage report or grant during the reset can still be overwritten.
+
+**Breaking:** Every `POST /usage` caller must now send `eventId`, or gets 400.
