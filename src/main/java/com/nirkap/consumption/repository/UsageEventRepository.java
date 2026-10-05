@@ -13,6 +13,8 @@ import com.nirkap.consumption.entity.UsageEvent;
 // service name or a user id. The time range is [from, to).
 public interface UsageEventRepository extends JpaRepository<UsageEvent, Long> {
 
+    boolean existsByEventId(String eventId);
+
     @Query("""
             SELECT e.serviceName, SUM(e.tokensUsed) FROM UsageEvent e
             WHERE e.userId = :userId AND e.occurredAt >= :from AND e.occurredAt < :to

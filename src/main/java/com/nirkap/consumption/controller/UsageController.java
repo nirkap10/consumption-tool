@@ -3,9 +3,9 @@ package com.nirkap.consumption.controller;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nirkap.consumption.dto.RecordUsageRequest;
@@ -22,11 +22,12 @@ public class UsageController {
         this.usageService = usageService;
     }
 
+    // 201 when the report is new, 200 when this eventId was already recorded.
     @PostMapping("/api/v1/usage")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, Long> record(@Valid @RequestBody RecordUsageRequest request) {
-        long remaining = usageService.record(
+    public ResponseEntity<Map<String, Long>> record(@Valid @RequestBody RecordUsageRequest request) {
+        UsageService.Result result = usageService.record(request.eventId(),
                 request.userId(), request.serviceName(), request.tokensUsed(), request.occurredAt());
-        return Map.of("remainingCredit", remaining);
+        HttpStatus status = result.duplicate() ? HttpStatus.OK : HttpStatus.CREATED;
+        return ResponseEntity.status(status).body(Map.of("remainingCredit", result.remainingCredit()));
     }
 }

@@ -3,6 +3,7 @@ package com.nirkap.consumption.service;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nirkap.consumption.entity.Grant;
 import com.nirkap.consumption.entity.User;
@@ -23,14 +24,15 @@ public class GrantService {
         this.grantRepository = grantRepository;
     }
 
-    // Two separate writes, no transaction yet (see DECISIONS).
+    // The grant row and the balance change are one transaction: both are saved
+    // or neither is.
+    @Transactional
     public long create(UUID userId, long amount, String reason) {
         User user = userService.get(userId);
 
         grantRepository.save(new Grant(user.getId(), user.getOrganizationId(), amount, reason));
 
-        user.grant(amount);
-        userRepository.save(user);
-        return user.getRemainingCredit();
+        userRepository.addCredit(user.getId(), amount);
+        return userRepository.findRemainingCredit(user.getId());
     }
 }
