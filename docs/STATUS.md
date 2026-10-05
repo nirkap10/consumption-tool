@@ -4,7 +4,7 @@
 
 Steps 1 to 9 done and merged into `main` (PR #1, #2, #4, #5, #6, #8, #10, #11 and #12).
 **v1 is complete.** After v1, item 1 of PLAN's list ("Trustworthy balance") is
-done and merged (PR #13).
+done and merged (PR #13 and #14).
 
 Step 1: Spring Boot skeleton, Postgres in Docker, `GET /api/v1/ping`.
 
@@ -55,9 +55,15 @@ run in one transaction and change the balance with a single SQL `UPDATE`
 (`UserRepository.spend()` / `addCredit()`) — the transaction and the usage update
 written by Nir, checked by Claude. `POST /usage` now requires an `eventId`; a
 repeated one returns `200` with the current balance and changes nothing (`V5`
-adds `event_id` with a unique constraint). Grants take no `eventId`. README
-updated. `UsageFlowTest` now has 8 tests (adds: same `eventId` twice, missing
-`eventId`, a grant); `mvn test` is green.
+adds `event_id` with a unique constraint). README updated.
+
+Grant `eventId` (PR #14, branch `grant-event-id`): Nir's call, because whoever sends
+a grant will resend it if no response comes back. `POST /grants` now requires an
+`eventId` and treats a repeat the same way as usage (`V6` adds `grants.event_id`
+with a unique constraint). Both services return a shared `BalanceResult`
+(`remainingCredit`, `duplicate`). `UsageFlowTest` now has 10 tests (adds since v1:
+same `eventId` twice and missing `eventId`, for both usage and grants, plus a
+grant raising the balance); `mvn test` is green.
 
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 
@@ -78,4 +84,4 @@ PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
 - The GitHub CLI (`gh`) is not installed, so Claude cannot open PRs; Nir opens
   them in the browser. `winget install GitHub.cli` + `gh auth login` would fix it.
 - Nothing blocking the design. The deferred items (auth, a transactional reset,
-  idempotency on grants, customers) are all recorded in `DECISIONS.md`.
+  customers) are all recorded in `DECISIONS.md`.

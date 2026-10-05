@@ -68,7 +68,8 @@ survives a user changing organization.
   `service_name`, `tokens_used` BIGINT, `occurred_at`, `event_id` (unique, the
   caller's id for the report)
 - **grants** — `id` BIGSERIAL PK, `user_id` FK, `organization_id` FK,
-  `amount` BIGINT, `reason`, `granted_at`
+  `amount` BIGINT, `reason`, `granted_at`, `event_id` (unique, the caller's id
+  for the grant)
 
 Raw events are the source of truth. `remaining_credit` is a convenience cache
 updated on write. Reports are `SUM ... GROUP BY` at read time — no pre-aggregation.
@@ -83,20 +84,21 @@ Base path `/api/v1`.
 | POST | `/users` | `organizationId`, `monthlyAllowance` | — |
 | GET  | `/users/{userId}/balance` | `userId` (path) | — |
 | POST | `/usage` | `eventId`, `userId`, `serviceName`, `tokensUsed` | `occurredAt` |
-| POST | `/grants` | `userId`, `amount` | `reason` |
+| POST | `/grants` | `eventId`, `userId`, `amount` | `reason` |
 | GET  | `/reports/monthly` | one of `userId` / `organizationId` | `month` (`YYYY-MM`) |
 
 `GET` for the balance check because nothing is reserved or mutated. `POST`
 wherever a row is written. Errors: 400 on validation, 404 on unknown id.
 
 `POST /usage` **always records**, even with insufficient credit — the usage
-already happened, and the balance is allowed to go negative. A repeated
-`eventId` is a retry: nothing changes, and the answer is `200` with the current
-balance (`201` for a new report).
+already happened, and the balance is allowed to go negative.
+
+On `POST /usage` and `POST /grants`, a repeated `eventId` is a retry: nothing
+changes, and the answer is `200` with the current balance (`201` for a new one).
 
 ## Deliberately deferred — do not add these unasked
 
-Auth · a transactional reset · idempotency on `/grants` · per-model pricing or USD ·
+Auth · a transactional reset · per-model pricing or USD ·
 customers · any UI · alerts · forecasting · rate limiting · an SDK · deployment.
 
 Each of these has an entry in `docs/DECISIONS.md` with the reasoning and the

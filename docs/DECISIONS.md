@@ -477,3 +477,28 @@ caller's next retry gets 200. The monthly reset is still load, change, save, so
 a usage report or grant during the reset can still be overwritten.
 
 **Breaking:** Every `POST /usage` caller must now send `eventId`, or gets 400.
+
+---
+
+## 2026-10-05 — Grants require an eventId too
+
+**Decision:** `POST /grants` requires an `eventId`, the same way `POST /usage`
+does: a string the caller picks, unique per real grant, at most 255 characters.
+A repeated `eventId` changes nothing and answers `200 {"remainingCredit": N}`; a
+new grant is `201`. `V6` adds `grants.event_id` with a unique constraint; rows
+from before it are `NULL`. The `(remainingCredit, duplicate)` answer moved from
+`UsageService.Result` to a shared `BalanceResult` record used by both services.
+
+This supersedes the "An `eventId` on grants" rejection in "Trustworthy balance"
+(2026-10-05, the entry above).
+
+**Why:** Nir's call. Whether a person or a system sends the grant, if no
+response comes back, it will send the same request again. A double grant is as
+wrong as a double usage, and spotting it in the `grants` table is not
+protection.
+
+**Known risk:** Same as for usage: two copies of the same `eventId` at the exact
+same moment give one `201` and one `500` (the unique constraint rejects the
+second insert); the balance stays correct.
+
+**Breaking:** Every `POST /grants` caller must now send `eventId`, or gets 400.
