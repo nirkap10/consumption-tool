@@ -83,5 +83,12 @@ PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
   Decide whether to commit it or add it to `.gitignore`.
 - The GitHub CLI (`gh`) is not installed, so Claude cannot open PRs; Nir opens
   them in the browser. `winget install GitHub.cli` + `gh auth login` would fix it.
+- Direct use of AI tools (e.g. an employee using Claude Code or ChatGPT with a
+  company account) is not covered: no company code sits in the middle, so nobody
+  sends us usage or asks for the balance. The tool fits AI that is wrapped in the
+  company's own code. Possible later: importers that pull usage from provider
+  usage APIs or tool telemetry (recording only, no up-front balance check), using
+  the provider's record id as `eventId`. Also worth stating this scope in the
+  README. Notes in `notes/architecture-direct-ai-tools.md` (2026-10-05).
 - Nothing blocking the design. The deferred items (auth, a transactional reset,
   customers) are all recorded in `DECISIONS.md`.
