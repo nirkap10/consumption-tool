@@ -105,9 +105,33 @@ class UsageFlowTest {
         String userId = createUser(1000);
 
         mvc.perform(postJson("/api/v1/grants",
-                "{\"userId\":\"" + userId + "\",\"amount\":500,\"reason\":\"extra budget\"}"))
+                "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId
+                        + "\",\"amount\":500,\"reason\":\"extra budget\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.remainingCredit").value(1500));
+    }
+
+    @Test
+    void sameGrantEventIdTwiceIsAddedOnce() throws Exception {
+        String userId = createUser(1000);
+        String body = "{\"eventId\":\"" + newEventId() + "\",\"userId\":\"" + userId + "\",\"amount\":500}";
+
+        mvc.perform(postJson("/api/v1/grants", body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(1500));
+
+        // The retry: same eventId, so 200 and the balance does not move again.
+        mvc.perform(postJson("/api/v1/grants", body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.remainingCredit").value(1500));
+    }
+
+    @Test
+    void grantWithoutEventIdIs400() throws Exception {
+        String userId = createUser(1000);
+
+        mvc.perform(postJson("/api/v1/grants", "{\"userId\":\"" + userId + "\",\"amount\":500}"))
+                .andExpect(status().isBadRequest());
     }
 
     // Creates an organization and a user in it, and returns the user's id.

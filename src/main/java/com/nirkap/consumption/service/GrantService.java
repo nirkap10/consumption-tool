@@ -25,14 +25,19 @@ public class GrantService {
     }
 
     // The grant row and the balance change are one transaction: both are saved
-    // or neither is.
+    // or neither is. A repeated eventId is a retry of a grant we already have, so
+    // it changes nothing and just returns the current balance.
     @Transactional
-    public long create(UUID userId, long amount, String reason) {
+    public BalanceResult create(String eventId, UUID userId, long amount, String reason) {
         User user = userService.get(userId);
 
-        grantRepository.save(new Grant(user.getId(), user.getOrganizationId(), amount, reason));
+        if (grantRepository.existsByEventId(eventId)) {
+            return new BalanceResult(userRepository.findRemainingCredit(user.getId()), true);
+        }
+
+        grantRepository.save(new Grant(eventId, user.getId(), user.getOrganizationId(), amount, reason));
 
         userRepository.addCredit(user.getId(), amount);
-        return userRepository.findRemainingCredit(user.getId());
+        return new BalanceResult(userRepository.findRemainingCredit(user.getId()), false);
     }
 }
