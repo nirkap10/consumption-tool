@@ -146,7 +146,7 @@ it, over-spending going negative, a repeated `eventId` counted once, unknown use
 
 ## Not built (on purpose)
 
-Auth, transactional writes for grants and the reset, pricing or currency, customers,
+Auth, a transactional reset, idempotency on `/grants`, pricing or currency, customers,
 a UI, alerts, forecasting, rate limiting, an SDK, deployment. Each is recorded in
 `docs/DECISIONS.md` with why it was left out and when to revisit it.
 

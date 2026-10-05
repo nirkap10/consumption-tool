@@ -100,6 +100,16 @@ class UsageFlowTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void grantRaisesBalanceByTheAmount() throws Exception {
+        String userId = createUser(1000);
+
+        mvc.perform(postJson("/api/v1/grants",
+                "{\"userId\":\"" + userId + "\",\"amount\":500,\"reason\":\"extra budget\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(1500));
+    }
+
     // Creates an organization and a user in it, and returns the user's id.
     private String createUser(long monthlyAllowance) throws Exception {
         String orgJson = mvc.perform(postJson("/api/v1/organizations", "{\"name\":\"Test org\"}"))

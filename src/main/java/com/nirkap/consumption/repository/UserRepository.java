@@ -17,6 +17,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("UPDATE User u SET u.remainingCredit = u.remainingCredit - :tokens WHERE u.id = :id")
     void spend(@Param("id") UUID id, @Param("tokens") long tokens);
 
+    // One UPDATE, for the same reason as spend().
+    @Modifying
+    @Query("UPDATE User u SET u.remainingCredit = u.remainingCredit + :tokens WHERE u.id = :id")
+    void addCredit(@Param("id") UUID id, @Param("tokens") long tokens);
+
     @Query("SELECT u.remainingCredit FROM User u WHERE u.id = :id")
     long findRemainingCredit(@Param("id") UUID id);
 }
