@@ -22,7 +22,7 @@ public class Grant {
 
     // The caller's id for this grant; unique, so a retry is stored only once.
     // Null on rows from before it was added.
-    private String eventId;
+    private String eventId;//idempotent
 
     @Column(nullable = false)
     private UUID userId;
