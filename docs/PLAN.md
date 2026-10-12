@@ -139,6 +139,16 @@ curl -X POST localhost:8080/api/v1/grants -H 'Content-Type: application/json' \
 curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, service "chat"
 ```
 
+## Step 10 — Mentor review feedback
+
+Comments from the mentor (2026-10-12), as Nir wrote them down. Short term.
+
+- auditing
+- adding unique to eventId
+- clients give the organization id
+- add logs
+- catch exceptions
+
 ## After v1 — candidates, not scheduled
 
 All nine steps are done. These are the decisions waiting, most important first.
@@ -155,6 +165,11 @@ None is a step yet; each becomes one when Nir picks it.
    organization needs its own time zone.
 5. **Deployment and CI** — where it runs, plus an automated test run (which would
    bring Testcontainers back; DECISIONS 2026-10-01).
+6. **Different credit allowance modes** (mentor, 2026-10-12) — support different
+   ways of using credit: "add, save and use" OR "allow only if there is enough
+   and immediately decrease the balance".
+7. **Client with auth and a UI** (mentor, 2026-10-12) — create a client (auth) so
+   users can see their details in a nice UI.
 
 ## Out of scope for v1
 
