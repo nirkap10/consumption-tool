@@ -111,6 +111,8 @@ trigger to revisit. Read that before proposing one of them.
 - One branch and one pull request per step in `docs/PLAN.md`. Nir merges it
   himself; no mentor approval is needed per step.
 - Docs-only updates (`docs/`, this file) go straight to `main` — no branch, no PR.
+- Small code changes that are not in `docs/PLAN.md` may also go straight to
+  `main`. Anything written in PLAN gets its own branch and PR.
 - `docs/PLAN.md` is the future, `docs/STATUS.md` is the present,
   `docs/DECISIONS.md` is the past. This file is the rules.
 - `DECISIONS.md` is append-only. Never edit or delete an entry; supersede it with

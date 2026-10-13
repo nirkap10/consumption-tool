@@ -1,4 +1,4 @@
-# Status — 2026-10-05
+# Status — 2026-10-13
 
 ## Where we are
 
@@ -65,11 +65,23 @@ with a unique constraint). Both services return a shared `BalanceResult`
 same `eventId` twice and missing `eventId`, for both usage and grants, plus a
 grant raising the balance); `mvn test` is green.
 
-PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
+Commit `464af38` (straight to `main`): an `//idempotent` comment on `eventId` in
+`UsageEvent` and `Grant`. No behaviour change.
+
+Step 10 (mentor review feedback, 2026-10-12) is in PLAN. Its item "adding unique to
+eventId" was already covered by `V5` / `V6`: the unique constraint also creates an
+index, so the retry check `existsByEventId` is a fast lookup. Marked done.
+
+PRs are merged by Nir without waiting for a mentor review (see DECISIONS). Work in
+PLAN gets a branch and PR; small unplanned code changes may go straight to `main`
+(DECISIONS 2026-10-13).
 
 ## Next
 
-- Pick the next after-v1 item from `PLAN.md` (auth is next in order).
+- Step 10 — the remaining mentor items: auditing, clients give the organization
+  id, add logs, catch exceptions. Each needs a short talk on what it means before
+  building.
+- Auth is postponed to the end of the after-v1 list (DECISIONS 2026-10-13).
 - Smaller leftover from item 1: make the monthly reset one atomic `UPDATE`
   inside a transaction.
 
@@ -90,5 +102,8 @@ PRs are merged by Nir without waiting for a mentor review (see DECISIONS).
   usage APIs or tool telemetry (recording only, no up-front balance check), using
   the provider's record id as `eventId`. Also worth stating this scope in the
   README. Notes in `notes/architecture-direct-ai-tools.md` (2026-10-05).
+- "Clients give the organization id" (Step 10): today we look up the organization
+  from the user. Ask the mentor whether callers should send it, and what happens
+  if it does not match the user's organization.
 - Nothing blocking the design. The deferred items (auth, a transactional reset,
   customers) are all recorded in `DECISIONS.md`.

@@ -144,7 +144,9 @@ curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, servi
 Comments from the mentor (2026-10-12), as Nir wrote them down. Short term.
 
 - auditing
-- adding unique to eventId
+- ~~adding unique to eventId~~ — **done** by `V5` / `V6`: the unique constraint
+  also creates an index on `event_id`, so the retry check
+  (`existsByEventId`) is a fast index lookup
 - clients give the organization id
 - add logs
 - catch exceptions
@@ -157,19 +159,20 @@ None is a step yet; each becomes one when Nir picks it.
 1. ~~**Trustworthy balance**~~ — **done** (PR #13 and #14, DECISIONS 2026-10-05)
    for usage and grants, both with `eventId`. Still open: the monthly reset is not
    yet one atomic update.
-2. **Auth** — needed before the tool runs anywhere but localhost; `/admin/reset`
-   is open today.
-3. **Customers** — and with them, whether to refactor users into a shared
+2. **Customers** — and with them, whether to refactor users into a shared
    "account" concept (DECISIONS 2026-09-23).
-4. **Time zones** — reports and the reset use UTC months; decide whether each
+3. **Time zones** — reports and the reset use UTC months; decide whether each
    organization needs its own time zone.
-5. **Deployment and CI** — where it runs, plus an automated test run (which would
+4. **Deployment and CI** — where it runs, plus an automated test run (which would
    bring Testcontainers back; DECISIONS 2026-10-01).
-6. **Different credit allowance modes** (mentor, 2026-10-12) — support different
+5. **Different credit allowance modes** (mentor, 2026-10-12) — support different
    ways of using credit: "add, save and use" OR "allow only if there is enough
    and immediately decrease the balance".
-7. **Client with auth and a UI** (mentor, 2026-10-12) — create a client (auth) so
+6. **Client with auth and a UI** (mentor, 2026-10-12) — create a client (auth) so
    users can see their details in a nice UI.
+7. **Auth** — postponed by Nir (2026-10-13), moved from second place to last.
+   Still needed before the tool runs anywhere but localhost; `/admin/reset` is
+   open today.
 
 ## Out of scope for v1
 

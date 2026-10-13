@@ -502,3 +502,29 @@ same moment give one `201` and one `500` (the unique constraint rejects the
 second insert); the balance stays correct.
 
 **Breaking:** Every `POST /grants` caller must now send `eventId`, or gets 400.
+
+---
+
+## 2026-10-13 — Auth postponed
+
+**Decision:** Auth moves from second place to last in PLAN's after-v1 list.
+Step 10 (mentor review feedback) comes first.
+
+**Why:** Nir's call. The tool still runs only on localhost, so the trigger in
+"No auth in v1" (2026-09-23) has not been reached.
+
+**Known risk:** Unchanged — every endpoint, including `/admin/reset`, is open.
+
+---
+
+## 2026-10-13 — Unplanned small code changes may go straight to main
+
+**Decision:** Work written in `PLAN.md` (steps and after-v1 items) gets its own
+branch and pull request. Small code changes that are not in PLAN may be
+committed straight to `main`, like docs. Commit `464af38` (an `//idempotent`
+comment on `eventId` in two entities) is an example.
+
+**Why:** Nir's call. A branch and PR for a one-line change outside any step is
+more ceremony than it is worth.
+
+**Kept:** One branch and one PR per planned step; Nir merges them himself.
