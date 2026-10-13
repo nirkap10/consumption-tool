@@ -28,7 +28,7 @@ public class Grant {
     private UUID userId;
 
     @Column(nullable = false)
-    private UUID organizationId;
+    private String organizationId;
 
     @Column(nullable = false)
     private long amount;
@@ -41,7 +41,7 @@ public class Grant {
     protected Grant() {
     }
 
-    public Grant(String eventId, UUID userId, UUID organizationId, long amount, String reason) {
+    public Grant(String eventId, UUID userId, String organizationId, long amount, String reason) {
         this.eventId = eventId;
         this.userId = userId;
         this.organizationId = organizationId;
@@ -61,7 +61,7 @@ public class Grant {
         return userId;
     }
 
-    public UUID getOrganizationId() {
+    public String getOrganizationId() {
         return organizationId;
     }
 

@@ -21,7 +21,7 @@ public class User {
     private UUID id;
 
     @Column(nullable = false)
-    private UUID organizationId;
+    private String organizationId;
 
     @Column(nullable = false)
     private long monthlyAllowance;
@@ -35,7 +35,7 @@ public class User {
     protected User() {
     }
 
-    public User(UUID organizationId, long monthlyAllowance, long remainingCredit) {
+    public User(String organizationId, long monthlyAllowance, long remainingCredit) {
         this.organizationId = organizationId;
         this.monthlyAllowance = monthlyAllowance;
         this.remainingCredit = remainingCredit;
@@ -45,7 +45,7 @@ public class User {
         return id;
     }
 
-    public UUID getOrganizationId() {
+    public String getOrganizationId() {
         return organizationId;
     }
 

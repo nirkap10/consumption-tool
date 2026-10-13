@@ -2,6 +2,8 @@ package com.nirkap.consumption.service;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,8 @@ import com.nirkap.consumption.repository.UserRepository;
 
 @Service
 public class GrantService {
+
+    private static final Logger log = LoggerFactory.getLogger(GrantService.class);
 
     private final UserService userService;
     private final UserRepository userRepository;
@@ -32,12 +36,18 @@ public class GrantService {
         User user = userService.get(userId);
 
         if (grantRepository.existsByEventId(eventId)) {
-            return new BalanceResult(userRepository.findRemainingCredit(user.getId()), true);
+            long remaining = userRepository.findRemainingCredit(user.getId());
+            log.info("Grant repeated, nothing changed: eventId={} userId={} remainingCredit={}",
+                    eventId, userId, remaining);
+            return new BalanceResult(remaining, true);
         }
 
         grantRepository.save(new Grant(eventId, user.getId(), user.getOrganizationId(), amount, reason));
 
         userRepository.addCredit(user.getId(), amount);
-        return new BalanceResult(userRepository.findRemainingCredit(user.getId()), false);
+        long remaining = userRepository.findRemainingCredit(user.getId());
+        log.info("Grant recorded: eventId={} userId={} amount={} reason={} remainingCredit={}",
+                eventId, userId, amount, reason, remaining);
+        return new BalanceResult(remaining, false);
     }
 }

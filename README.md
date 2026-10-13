@@ -40,17 +40,26 @@ does not roll over.
 
 ## API
 
-Base path `/api/v1`. Errors: `400` on bad input, `404` on an unknown id.
+Base path `/api/v1`. Errors: `400` on bad input, `404` on an unknown id, `409` on an
+organization id that already exists, `500` on anything unexpected. Every error has
+the same body, with the reason in `error`:
+
+```json
+{ "status": 400, "error": "tokensUsed: must be greater than 0" }
+```
 
 | Method | Path | Body / query | Returns |
 |---|---|---|---|
-| POST | `/organizations` | `name` | `201 {"id"}` |
+| POST | `/organizations` | `id`, `name` | `201 {"id"}` |
 | POST | `/users` | `organizationId`, `monthlyAllowance` | `201 {"id"}` |
 | GET  | `/users/{userId}/balance` | — | `{"remainingCredit"}` |
 | POST | `/usage` | `eventId`, `userId`, `serviceName`, `tokensUsed`, optional `occurredAt` | `201 {"remainingCredit"}`, or `200` for a repeated `eventId` |
 | POST | `/grants` | `eventId`, `userId`, `amount`, optional `reason` | `201 {"remainingCredit"}`, or `200` for a repeated `eventId` |
 | GET  | `/reports/monthly` | `userId` **or** `organizationId`, optional `month` (`YYYY-MM`) | report, see below |
 | POST | `/admin/reset` | — | `{"usersReset"}` |
+
+The organization `id` is the client's own id for that organization, any string up
+to 255 characters. It is used everywhere `organizationId` appears.
 
 `eventId` is any string the caller picks, unique per real usage or grant. Sending
 the same `eventId` again (a retry) changes nothing and returns `200` with the
@@ -84,8 +93,10 @@ Check it is up: `curl localhost:8080/api/v1/ping` → `{"status":"ok"}`.
 
 ## Walkthrough
 
-Copy-paste these in a **second** terminal while the app runs. Replace `<org>` and
-`<user>` with the ids the first two calls return.
+Copy-paste these in a **second** terminal while the app runs. The organization id
+`acme-1` is ours to pick; replace `<user>` with the id the second call returns.
+To run it a second time, pick a new id (e.g. `acme-2`): an id that already exists
+answers `409`.
 
 > **Windows PowerShell:** type `curl.exe`, not `curl` — in PowerShell `curl` is an
 > alias for `Invoke-WebRequest`, which takes different arguments. The JSON quoting
@@ -96,9 +107,9 @@ Copy-paste these in a **second** terminal while the app runs. Replace `<org>` an
 ```
 # setup
 curl -X POST localhost:8080/api/v1/organizations -H 'Content-Type: application/json' \
-  -d '{"name":"Acme"}'
+  -d '{"id":"acme-1","name":"Acme"}'
 curl -X POST localhost:8080/api/v1/users -H 'Content-Type: application/json' \
-  -d '{"organizationId":"<org>","monthlyAllowance":1000}'
+  -d '{"organizationId":"acme-1","monthlyAllowance":1000}'
 
 # the two calls the company's system makes
 curl localhost:8080/api/v1/users/<user>/balance                     # 1000
@@ -109,7 +120,7 @@ curl localhost:8080/api/v1/users/<user>/balance                     # 750
 # extra credit, the report, and the monthly reset
 curl -X POST localhost:8080/api/v1/grants -H 'Content-Type: application/json' \
   -d '{"eventId":"<new-id>","userId":"<user>","amount":500,"reason":"extra budget"}'     # 1250
-curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, service "chat"
+curl "localhost:8080/api/v1/reports/monthly?organizationId=acme-1"  # 250, service "chat"
 curl -X POST localhost:8080/api/v1/admin/reset                      # back to 1000
 curl localhost:8080/api/v1/users/<user>/balance                     # 1000
 ```
@@ -118,7 +129,7 @@ curl localhost:8080/api/v1/users/<user>/balance                     # 1000
 
 ```powershell
 $api = "http://localhost:8080/api/v1"
-$org  = Invoke-RestMethod -Method Post "$api/organizations" -ContentType "application/json" -Body '{"name":"Acme"}'
+$org  = Invoke-RestMethod -Method Post "$api/organizations" -ContentType "application/json" -Body '{"id":"acme-1","name":"Acme"}'
 $user = Invoke-RestMethod -Method Post "$api/users" -ContentType "application/json" `
           -Body "{`"organizationId`":`"$($org.id)`",`"monthlyAllowance`":1000}"
 
