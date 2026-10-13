@@ -26,7 +26,7 @@ public class UsageEvent {
     private UUID userId;
 
     @Column(nullable = false)
-    private UUID organizationId;
+    private String organizationId;
 
     @Column(nullable = false)
     private String serviceName;
@@ -40,7 +40,7 @@ public class UsageEvent {
     protected UsageEvent() {
     }
 
-    public UsageEvent(String eventId, UUID userId, UUID organizationId, String serviceName, long tokensUsed,
+    public UsageEvent(String eventId, UUID userId, String organizationId, String serviceName, long tokensUsed,
             Instant occurredAt) {
         this.eventId = eventId;
         this.userId = userId;
@@ -62,7 +62,7 @@ public class UsageEvent {
         return userId;
     }
 
-    public UUID getOrganizationId() {
+    public String getOrganizationId() {
         return organizationId;
     }
 

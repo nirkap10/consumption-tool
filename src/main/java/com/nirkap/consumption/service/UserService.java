@@ -2,6 +2,8 @@ package com.nirkap.consumption.service;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,6 +15,8 @@ import com.nirkap.consumption.repository.UserRepository;
 @Service
 public class UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
 
@@ -21,16 +25,19 @@ public class UserService {
         this.organizationRepository = organizationRepository;
     }
 
-    public User create(UUID organizationId, long monthlyAllowance) {
+    public User create(String organizationId, long monthlyAllowance) {
         if (!organizationRepository.existsById(organizationId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + organizationId);
         }
         // A new user starts with their full allowance as credit.
-        return userRepository.save(new User(organizationId, monthlyAllowance, monthlyAllowance));
+        User user = userRepository.save(new User(organizationId, monthlyAllowance, monthlyAllowance));
+        log.info("User created: id={} organizationId={} monthlyAllowance={}",
+                user.getId(), organizationId, monthlyAllowance);
+        return user;
     }
 
     public User get(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId));
     }
 }

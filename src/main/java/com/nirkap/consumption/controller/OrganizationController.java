@@ -1,7 +1,6 @@
 package com.nirkap.consumption.controller;
 
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,7 @@ public class OrganizationController {
 
     @PostMapping("/api/v1/organizations")
     @ResponseStatus(HttpStatus.CREATED)
-    public Map<String, UUID> create(@Valid @RequestBody CreateOrganizationRequest request) {
-        return Map.of("id", organizationService.create(request.name()).getId());
+    public Map<String, String> create(@Valid @RequestBody CreateOrganizationRequest request) {
+        return Map.of("id", organizationService.create(request.id(), request.name()).getId());
     }
 }

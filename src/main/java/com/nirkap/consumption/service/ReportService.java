@@ -38,9 +38,9 @@ public class ReportService {
         return new MonthlyReport(month.toString(), total(byService), byService, null);
     }
 
-    public MonthlyReport forOrganization(UUID organizationId, YearMonth month) {
+    public MonthlyReport forOrganization(String organizationId, YearMonth month) {
         if (!organizationRepository.existsById(organizationId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Organization not found: " + organizationId);
         }
         Instant from = start(month);
         Instant to = start(month.plusMonths(1));

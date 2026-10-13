@@ -61,7 +61,7 @@ Four tables. `organization_id` is stored directly on `usage_events` and `grants`
 — deliberate denormalization, so org-wide reports need no join and history
 survives a user changing organization.
 
-- **organizations** — `id` UUID PK, `name`, `created_at`
+- **organizations** — `id` VARCHAR PK (the client's own id), `name`, `created_at`
 - **users** — `id` UUID PK, `organization_id` FK, `monthly_allowance` BIGINT,
   `remaining_credit` BIGINT, `created_at`
 - **usage_events** — `id` BIGSERIAL PK, `user_id` FK, `organization_id` FK,
@@ -80,7 +80,7 @@ Base path `/api/v1`.
 
 | Method | Path | Mandatory | Optional |
 |---|---|---|---|
-| POST | `/organizations` | `name` | — |
+| POST | `/organizations` | `id`, `name` | — |
 | POST | `/users` | `organizationId`, `monthlyAllowance` | — |
 | GET  | `/users/{userId}/balance` | `userId` (path) | — |
 | POST | `/usage` | `eventId`, `userId`, `serviceName`, `tokensUsed` | `occurredAt` |
@@ -88,7 +88,8 @@ Base path `/api/v1`.
 | GET  | `/reports/monthly` | one of `userId` / `organizationId` | `month` (`YYYY-MM`) |
 
 `GET` for the balance check because nothing is reserved or mutated. `POST`
-wherever a row is written. Errors: 400 on validation, 404 on unknown id.
+wherever a row is written. Errors: 400 on validation, 404 on unknown id, 409 on
+an organization id that already exists.
 
 `POST /usage` **always records**, even with insufficient credit — the usage
 already happened, and the balance is allowed to go negative.

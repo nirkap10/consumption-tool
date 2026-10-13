@@ -26,7 +26,7 @@ public class ReportController {
     // the current month.
     @GetMapping("/api/v1/reports/monthly")
     public MonthlyReport monthly(@RequestParam(required = false) UUID userId,
-            @RequestParam(required = false) UUID organizationId,
+            @RequestParam(required = false) String organizationId,
             @RequestParam(required = false) YearMonth month) {
         if ((userId == null) == (organizationId == null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

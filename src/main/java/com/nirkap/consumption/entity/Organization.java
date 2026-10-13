@@ -1,14 +1,11 @@
 package com.nirkap.consumption.entity;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -16,9 +13,9 @@ import jakarta.persistence.Table;
 @Table(name = "organizations")
 public class Organization {
 
+    // The client's own id for this organization, in whatever format it uses.
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
     @Column(nullable = false)
     private String name;
@@ -29,11 +26,12 @@ public class Organization {
     protected Organization() {
     }
 
-    public Organization(String name) {
+    public Organization(String id, String name) {
+        this.id = id;
         this.name = name;
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

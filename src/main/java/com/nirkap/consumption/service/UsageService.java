@@ -3,6 +3,8 @@ package com.nirkap.consumption.service;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import com.nirkap.consumption.repository.UserRepository;
 
 @Service
 public class UsageService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsageService.class);
 
     private final UserService userService;
     private final UserRepository userRepository;
@@ -34,7 +38,10 @@ public class UsageService {
         User user = userService.get(userId);
 
         if (usageEventRepository.existsByEventId(eventId)) {
-            return new BalanceResult(userRepository.findRemainingCredit(user.getId()), true);
+            long remaining = userRepository.findRemainingCredit(user.getId());
+            log.info("Usage repeated, nothing changed: eventId={} userId={} remainingCredit={}",
+                    eventId, userId, remaining);
+            return new BalanceResult(remaining, true);
         }
 
         Instant when = occurredAt != null ? occurredAt : Instant.now();
@@ -42,6 +49,9 @@ public class UsageService {
                 new UsageEvent(eventId, user.getId(), user.getOrganizationId(), serviceName, tokensUsed, when));
 
         userRepository.spend(user.getId(), tokensUsed);
-        return new BalanceResult(userRepository.findRemainingCredit(user.getId()), false);
+        long remaining = userRepository.findRemainingCredit(user.getId());
+        log.info("Usage recorded: eventId={} userId={} service={} tokensUsed={} remainingCredit={}",
+                eventId, userId, serviceName, tokensUsed, remaining);
+        return new BalanceResult(remaining, false);
     }
 }

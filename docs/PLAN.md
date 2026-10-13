@@ -143,13 +143,16 @@ curl "localhost:8080/api/v1/reports/monthly?organizationId=<org>"   # 250, servi
 
 Comments from the mentor (2026-10-12), as Nir wrote them down. Short term.
 
-- auditing
+- auditing — **deferred** (DECISIONS 2026-10-13): four audit columns per table
 - ~~adding unique to eventId~~ — **done** by `V5` / `V6`: the unique constraint
   also creates an index on `event_id`, so the retry check
   (`existsByEventId`) is a fast index lookup
-- clients give the organization id
-- add logs
-- catch exceptions
+- ~~clients give the organization id~~ — **done**: `POST /organizations` takes
+  the client's own `id` (any string), `V7` (DECISIONS 2026-10-13)
+- ~~add logs~~ — **done**: one log line per write and per 404/409, console
+  only (DECISIONS 2026-10-13)
+- ~~catch exceptions~~ — **done**: one `ErrorHandler` for every endpoint, one
+  error body shape (DECISIONS 2026-10-13)
 
 ## After v1 — candidates, not scheduled
 

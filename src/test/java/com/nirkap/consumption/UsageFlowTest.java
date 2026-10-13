@@ -134,12 +134,29 @@ class UsageFlowTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void sameOrganizationIdTwiceIs409() throws Exception {
+        String body = "{\"id\":\"org-" + UUID.randomUUID() + "\",\"name\":\"Test org\"}";
+
+        mvc.perform(postJson("/api/v1/organizations", body))
+                .andExpect(status().isCreated());
+
+        mvc.perform(postJson("/api/v1/organizations", body))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void organizationWithoutIdIs400() throws Exception {
+        mvc.perform(postJson("/api/v1/organizations", "{\"name\":\"Test org\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
     // Creates an organization and a user in it, and returns the user's id.
     private String createUser(long monthlyAllowance) throws Exception {
-        String orgJson = mvc.perform(postJson("/api/v1/organizations", "{\"name\":\"Test org\"}"))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString();
-        String orgId = JsonPath.read(orgJson, "$.id");
+        // The client's own id for the organization; any text works.
+        String orgId = "org-" + UUID.randomUUID();
+        mvc.perform(postJson("/api/v1/organizations", "{\"id\":\"" + orgId + "\",\"name\":\"Test org\"}"))
+                .andExpect(status().isCreated());
 
         String userJson = mvc.perform(postJson("/api/v1/users",
                 "{\"organizationId\":\"" + orgId + "\",\"monthlyAllowance\":" + monthlyAllowance + "}"))

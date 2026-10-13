@@ -25,11 +25,11 @@ public interface UsageEventRepository extends JpaRepository<UsageEvent, Long> {
             SELECT e.serviceName, SUM(e.tokensUsed) FROM UsageEvent e
             WHERE e.organizationId = :organizationId AND e.occurredAt >= :from AND e.occurredAt < :to
             GROUP BY e.serviceName ORDER BY e.serviceName""")
-    List<Object[]> sumByServiceForOrganization(UUID organizationId, Instant from, Instant to);
+    List<Object[]> sumByServiceForOrganization(String organizationId, Instant from, Instant to);
 
     @Query("""
             SELECT e.userId, SUM(e.tokensUsed) FROM UsageEvent e
             WHERE e.organizationId = :organizationId AND e.occurredAt >= :from AND e.occurredAt < :to
             GROUP BY e.userId ORDER BY e.userId""")
-    List<Object[]> sumByUserForOrganization(UUID organizationId, Instant from, Instant to);
+    List<Object[]> sumByUserForOrganization(String organizationId, Instant from, Instant to);
 }
