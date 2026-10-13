@@ -69,9 +69,9 @@ Commit `464af38` (straight to `main`): an `//idempotent` comment on `eventId` in
 `UsageEvent` and `Grant`. No behaviour change.
 
 Step 10 (feedback from Mordi, the mentor, 2026-10-12), branch
-`step-10-mentor-feedback`, pushed, **PR not opened yet**. Compiles
-(`mvn test-compile`); **`mvn test` has not been run** — Docker Desktop was off,
-and Nir chose to test later. `V7` has not run against a database yet.
+`step-10-mentor-feedback`, pushed, **PR not opened yet**. `V7` applied cleanly
+to the local database; `mvn test` is green (12 tests). The log showed the
+handler's `WARN` lines for 400, 404 and 409 as expected.
 
 - Unique `eventId`: already covered by `V5` / `V6` (the unique constraint also
   creates an index, so `existsByEventId` is a fast lookup). Nothing to build.
@@ -92,8 +92,7 @@ PLAN gets a branch and PR; small unplanned code changes may go straight to `main
 
 ## Next
 
-- Step 10: start Docker Desktop, run `mvn test` (checks `V7` and the handler),
-  fix anything that fails, then open the PR from `step-10-mentor-feedback`.
+- Step 10: open the PR from `step-10-mentor-feedback` and merge it.
 - Auth is postponed to the end of the after-v1 list (DECISIONS 2026-10-13).
 - Smaller leftover from item 1: make the monthly reset one atomic `UPDATE`
   inside a transaction.
