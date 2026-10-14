@@ -1,4 +1,4 @@
-# Status — 2026-10-13
+# Status — 2026-10-14
 
 ## Where we are
 
@@ -69,7 +69,7 @@ Commit `464af38` (straight to `main`): an `//idempotent` comment on `eventId` in
 `UsageEvent` and `Grant`. No behaviour change.
 
 Step 10 (feedback from Mordi, the mentor, 2026-10-12), branch
-`step-10-mentor-feedback`, pushed, **PR not opened yet**. `V7` applied cleanly
+`step-10-mentor-feedback`, **merged** (PR #15). `V7` applied cleanly
 to the local database; `mvn test` is green (12 tests). The log showed the
 handler's `WARN` lines for 400, 404 and 409 as expected.
 
@@ -92,7 +92,6 @@ PLAN gets a branch and PR; small unplanned code changes may go straight to `main
 
 ## Next
 
-- Step 10: open the PR from `step-10-mentor-feedback` and merge it.
 - Auth is postponed to the end of the after-v1 list (DECISIONS 2026-10-13).
 - Smaller leftover from item 1: make the monthly reset one atomic `UPDATE`
   inside a transaction.
