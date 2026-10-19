@@ -1,6 +1,7 @@
 package com.nirkap.consumption.service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -31,20 +32,31 @@ public class UsageService {
 
     // Always records, even without enough credit (see DECISIONS). The event row
     // and the balance change are one transaction: both are saved or neither is.
-    // A repeated eventId is a retry of a report we already have, so it changes
-    // nothing and just returns the current balance.
+    // If the eventId belongs to a waiting reservation, this report confirms it.
+    // Otherwise a repeated eventId is a retry of a report we already have, so it
+    // changes nothing and just returns the current balance.
     @Transactional
     public BalanceResult record(String eventId, UUID userId, String serviceName, long tokensUsed, Instant occurredAt) {
         User user = userService.get(userId);
+        Instant when = occurredAt != null ? occurredAt : Instant.now();
 
-        if (usageEventRepository.existsByEventId(eventId)) {
+        Optional<UsageEvent> existing = usageEventRepository.findByEventId(eventId);
+        if (existing.isPresent()) {
+            UsageEvent event = existing.get();
+            if (usageEventRepository.confirmReservation(event.getId(), tokensUsed, when) == 1) {
+                // The reserved tokens were taken already; charge only the difference.
+                userRepository.spend(event.getUserId(), tokensUsed - event.getTokensUsed());
+                long remaining = userRepository.findRemainingCredit(event.getUserId());
+                log.info("Reservation confirmed: eventId={} userId={} reserved={} tokensUsed={} remainingCredit={}",
+                        eventId, event.getUserId(), event.getTokensUsed(), tokensUsed, remaining);
+                return new BalanceResult(remaining, false);
+            }
             long remaining = userRepository.findRemainingCredit(user.getId());
             log.info("Usage repeated, nothing changed: eventId={} userId={} remainingCredit={}",
                     eventId, userId, remaining);
             return new BalanceResult(remaining, true);
         }
 
-        Instant when = occurredAt != null ? occurredAt : Instant.now();
         usageEventRepository.save(
                 new UsageEvent(eventId, user.getId(), user.getOrganizationId(), serviceName, tokensUsed, when));
 

@@ -37,17 +37,27 @@ public class UsageEvent {
     @Column(nullable = false)
     private Instant occurredAt;
 
+    // Set while this row is a reservation waiting for its usage call. Null on
+    // normal usage.
+    private Instant reservedUntil;
+
     protected UsageEvent() {
     }
 
     public UsageEvent(String eventId, UUID userId, String organizationId, String serviceName, long tokensUsed,
             Instant occurredAt) {
+        this(eventId, userId, organizationId, serviceName, tokensUsed, occurredAt, null);
+    }
+
+    public UsageEvent(String eventId, UUID userId, String organizationId, String serviceName, long tokensUsed,
+            Instant occurredAt, Instant reservedUntil) {
         this.eventId = eventId;
         this.userId = userId;
         this.organizationId = organizationId;
         this.serviceName = serviceName;
         this.tokensUsed = tokensUsed;
         this.occurredAt = occurredAt;
+        this.reservedUntil = reservedUntil;
     }
 
     public Long getId() {
@@ -76,5 +86,9 @@ public class UsageEvent {
 
     public Instant getOccurredAt() {
         return occurredAt;
+    }
+
+    public Instant getReservedUntil() {
+        return reservedUntil;
     }
 }

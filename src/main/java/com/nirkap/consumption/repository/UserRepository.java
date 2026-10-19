@@ -17,6 +17,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("UPDATE User u SET u.remainingCredit = u.remainingCredit - :tokens WHERE u.id = :id")
     void spend(@Param("id") UUID id, @Param("tokens") long tokens);
 
+    // Takes the tokens only if there are enough, checked and taken in one UPDATE
+    // so two reservations at the same moment cannot share the same credit.
+    // Returns 1 when reserved, 0 when there was not enough.
+    @Modifying
+    @Query("UPDATE User u SET u.remainingCredit = u.remainingCredit - :tokens "
+            + "WHERE u.id = :id AND u.remainingCredit >= :tokens")
+    int reserve(@Param("id") UUID id, @Param("tokens") long tokens);
+
     // One UPDATE, for the same reason as spend().
     @Modifying
     @Query("UPDATE User u SET u.remainingCredit = u.remainingCredit + :tokens WHERE u.id = :id")

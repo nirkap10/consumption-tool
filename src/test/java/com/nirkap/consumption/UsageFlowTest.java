@@ -12,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.jayway.jsonpath.JsonPath;
+import com.nirkap.consumption.service.ReservationService;
 
 // Runs the whole app against the Postgres from docker-compose, so
 // `docker compose up -d` must be running. Each test creates its own
@@ -26,6 +28,12 @@ class UsageFlowTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @Test
     void newUserStartsWithFullAllowance() throws Exception {
@@ -149,6 +157,110 @@ class UsageFlowTest {
     void organizationWithoutIdIs400() throws Exception {
         mvc.perform(postJson("/api/v1/organizations", "{\"name\":\"Test org\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void reserveThenConfirmChargesTheRealUseOnce() throws Exception {
+        String userId = createUser(1000);
+        String eventId = newEventId();
+
+        mvc.perform(postJson("/api/v1/reservations", reservationBody(eventId, userId, 100)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(900));
+
+        // Used 20 more than reserved, so 20 more comes off.
+        mvc.perform(postJson("/api/v1/usage", usageBody(eventId, userId, 120)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(880));
+
+        // The retry: the reservation is already confirmed, so nothing changes.
+        mvc.perform(postJson("/api/v1/usage", usageBody(eventId, userId, 120)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.remainingCredit").value(880));
+    }
+
+    @Test
+    void confirmingLessThanReservedGivesTheRestBack() throws Exception {
+        String userId = createUser(1000);
+        String eventId = newEventId();
+
+        mvc.perform(postJson("/api/v1/reservations", reservationBody(eventId, userId, 100)));
+
+        mvc.perform(postJson("/api/v1/usage", usageBody(eventId, userId, 60)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(940));
+    }
+
+    @Test
+    void reservingMoreThanTheBalanceIs409() throws Exception {
+        String userId = createUser(1000);
+
+        mvc.perform(postJson("/api/v1/reservations", reservationBody(newEventId(), userId, 2000)))
+                .andExpect(status().isConflict());
+
+        mvc.perform(get("/api/v1/users/" + userId + "/balance"))
+                .andExpect(jsonPath("$.remainingCredit").value(1000));
+    }
+
+    @Test
+    void sameReservationEventIdTwiceIsReservedOnce() throws Exception {
+        String userId = createUser(1000);
+        String body = reservationBody(newEventId(), userId, 100);
+
+        mvc.perform(postJson("/api/v1/reservations", body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(900));
+
+        mvc.perform(postJson("/api/v1/reservations", body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.remainingCredit").value(900));
+    }
+
+    @Test
+    void expiredReservationGivesTokensBackAndLateUsageIsNormalUsage() throws Exception {
+        String userId = createUser(1000);
+        String eventId = newEventId();
+
+        mvc.perform(postJson("/api/v1/reservations", reservationBody(eventId, userId, 100)));
+
+        // Pretend the reservation time has passed, then run the expiry job.
+        jdbc.update("UPDATE usage_events SET reserved_until = now() - interval '1 minute' WHERE event_id = ?",
+                eventId);
+        reservationService.expireReservations();
+
+        mvc.perform(get("/api/v1/users/" + userId + "/balance"))
+                .andExpect(jsonPath("$.remainingCredit").value(1000));
+
+        // The usage call comes too late, so it is charged in full.
+        mvc.perform(postJson("/api/v1/usage", usageBody(eventId, userId, 120)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.remainingCredit").value(880));
+    }
+
+    @Test
+    void waitingReservationIsNotInTheMonthlyReport() throws Exception {
+        String userId = createUser(1000);
+        String eventId = newEventId();
+
+        mvc.perform(postJson("/api/v1/reservations", reservationBody(eventId, userId, 100)));
+
+        mvc.perform(get("/api/v1/reports/monthly").param("userId", userId))
+                .andExpect(jsonPath("$.totalTokens").value(0));
+
+        mvc.perform(postJson("/api/v1/usage", usageBody(eventId, userId, 120)));
+
+        mvc.perform(get("/api/v1/reports/monthly").param("userId", userId))
+                .andExpect(jsonPath("$.totalTokens").value(120));
+    }
+
+    private static String reservationBody(String eventId, String userId, long tokens) {
+        return "{\"eventId\":\"" + eventId + "\",\"userId\":\"" + userId
+                + "\",\"serviceName\":\"chat\",\"tokens\":" + tokens + "}";
+    }
+
+    private static String usageBody(String eventId, String userId, long tokensUsed) {
+        return "{\"eventId\":\"" + eventId + "\",\"userId\":\"" + userId
+                + "\",\"serviceName\":\"chat\",\"tokensUsed\":" + tokensUsed + "}";
     }
 
     // Creates an organization and a user in it, and returns the user's id.
