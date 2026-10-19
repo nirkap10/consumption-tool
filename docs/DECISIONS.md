@@ -644,3 +644,46 @@ hold. Some tables already have a creation time (`created_at`, `occurred_at`,
 `granted_at`).
 
 **Revisit when:** Auth is built, or Mordi asks for it before then.
+
+---
+
+## 2026-10-19 — Step 11: reservations in `usage_events`, no new table
+
+**Decision:** A caller may reserve credit before a use and report the real use
+after it. This is a second option; plain `POST /usage` works as before.
+
+- `POST /reservations` (`eventId`, `userId`, `serviceName`, `tokens`) takes the
+  credit with one `UPDATE ... WHERE remaining_credit >= :tokens`. Changed 1 row →
+  a `usage_events` row is written with `tokens_used = tokens` and
+  `reserved_until = now + consumption.reservation-minutes` (3, in
+  `application.yml`), answer `201`. Changed 0 rows → `409`, nothing written. An
+  `eventId` that is already stored → `200`, nothing changes.
+- `POST /usage` with that `eventId` confirms it with one `UPDATE ... WHERE
+  reserved_until IS NOT NULL`: the row gets the real tokens and the real time,
+  `reserved_until` becomes `NULL`, and the balance changes by `real - reserved`
+  (back up if less was used, down if more; it may go negative). The service name
+  stays the reservation's. Only one call can change the row, so a retry or two
+  calls at the same moment are charged once.
+- A `@Scheduled` job every 30 seconds deletes each row whose `reserved_until`
+  has passed and gives its tokens back, again with a `WHERE reserved_until IS NOT
+  NULL` so it cannot touch a row that was just confirmed. A usage call after
+  that is normal usage, charged in full. Until the job runs, a late usage call
+  still confirms the reservation (up to 30 seconds of grace).
+- Monthly reports leave out rows with `reserved_until` set.
+
+**Why:** After-v1 item 5 from Mordi: "allow only if there is enough and
+immediately decrease the balance". Nir's design and answers (2026-10-19). Reusing
+`usage_events` keeps the change small: one column, one endpoint, one branch in
+`UsageService`, one job. It stays advisory: we answer "reserved" or "not enough",
+and the company decides what to do; we still never sit in front of the service.
+
+**Rejected:** A `reservations` table (more code; Nir wanted to change little).
+`402` for not enough credit (`409` matches our other conflict answer). Counting
+waiting reservations in reports (minor and not real use yet).
+
+**Known risk:** The monthly reset is not aware of reservations. A reservation
+made before the reset and expiring after it gives its tokens back on top of the
+fresh allowance, and a confirmation after the reset charges only the
+difference. Nir's call: leave it. Two identical reservations at the exact same
+moment behave like the usage race in 2026-10-05: the second insert fails and
+rolls back with a 500, and the balance stays correct.
