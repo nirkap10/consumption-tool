@@ -154,6 +154,31 @@ Comments from the mentor (2026-10-12), as Nir wrote them down. Short term.
 - ~~catch exceptions~~ — **done**: one `ErrorHandler` for every endpoint, one
   error body shape (DECISIONS 2026-10-13)
 
+## Step 11 — Reservations
+
+A second way to use credit, beside the existing "use, then report": reserve
+first, then report the real use (after-v1 item 5; DECISIONS 2026-10-19). No new
+table: a reservation is a `usage_events` row written before the use.
+
+- `V8` adds `usage_events.reserved_until` (nullable `TIMESTAMPTZ`). Set = a
+  reservation waiting for its usage call; `NULL` = normal usage.
+- `POST /reservations` with `eventId`, `userId`, `serviceName`, `tokens`. One
+  `UPDATE` takes the credit only if there is enough. Enough → the row is written
+  with `reserved_until = now + 3 min`, `201 {"remainingCredit": N}`. Not
+  enough → `409`, nothing written. A repeated `eventId` → `200`, nothing changes.
+- `POST /usage` with the reservation's `eventId` confirms it: the balance
+  changes by `real - reserved`, the row gets the real tokens and
+  `reserved_until = NULL`, `201`. A second identical call is a retry (`200`).
+- A scheduled job (every 30 seconds) deletes reservations whose time has passed
+  and gives their tokens back. A usage call that arrives after that is normal
+  usage, charged in full.
+- Monthly reports leave out waiting reservations.
+- The 3 minutes is a setting in `application.yml`.
+
+*Verify:* reserve 100 of 1000 → 900; confirm with 120 → 880; confirm again →
+200 and still 880; reserve 2000 of 1000 → 409; an expired reservation gives its
+100 back; a waiting reservation is not in the monthly report.
+
 ## After v1 — candidates, not scheduled
 
 All nine steps are done. These are the decisions waiting, most important first.
@@ -168,9 +193,9 @@ None is a step yet; each becomes one when Nir picks it.
    organization needs its own time zone.
 4. **Deployment and CI** — where it runs, plus an automated test run (which would
    bring Testcontainers back; DECISIONS 2026-10-01).
-5. **Different credit allowance modes** (mentor, 2026-10-12) — support different
+5. ~~**Different credit allowance modes**~~ (mentor, 2026-10-12) — support different
    ways of using credit: "add, save and use" OR "allow only if there is enough
-   and immediately decrease the balance".
+   and immediately decrease the balance". **Now Step 11** (reservations).
 6. **Client with auth and a UI** (mentor, 2026-10-12) — create a client (auth) so
    users can see their details in a nice UI.
 7. **Auth** — postponed by Nir (2026-10-13), moved from second place to last.
