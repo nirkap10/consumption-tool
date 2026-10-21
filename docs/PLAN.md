@@ -179,6 +179,26 @@ table: a reservation is a `usage_events` row written before the use.
 200 and still 880; reserve 2000 of 1000 → 409; an expired reservation gives its
 100 back; a waiting reservation is not in the monthly report.
 
+## Step 12 — Report page
+
+A web page where the client (the company that integrated the tool into its
+system) sees the monthly report in a simple design (after-v1 item 6, UI part
+only; DECISIONS 2026-10-21). No login and no auth.
+
+- Thymeleaf (`spring-boot-starter-thymeleaf`): Spring Boot renders the HTML
+  itself. No JavaScript app, no second project.
+- One page, the report. It shows what `GET /api/v1/reports/monthly` already
+  returns (`month`, `totalTokens`, `byService`, `byUser`), using the same
+  service. No new queries.
+- A wrong or unknown id shows a message on the page, not a JSON error.
+
+*To decide when the step starts:* what the client picks on the page (one
+organization, one user, or all of its organizations); the page's path; a CSS
+library (e.g. Pico.css) or plain CSS; tables only or a chart too.
+
+*Verify:* the app runs, the page opens in a browser and shows the same numbers
+as `GET /api/v1/reports/monthly` for the same id and month.
+
 ## After v1 — candidates, not scheduled
 
 All nine steps are done. These are the decisions waiting, most important first.
@@ -197,7 +217,8 @@ None is a step yet; each becomes one when Nir picks it.
    ways of using credit: "add, save and use" OR "allow only if there is enough
    and immediately decrease the balance". **Now Step 11** (reservations).
 6. **Client with auth and a UI** (mentor, 2026-10-12) — create a client (auth) so
-   users can see their details in a nice UI.
+   users can see their details in a nice UI. **The UI part is now Step 12**
+   (report page, no login). Auth is decided later, with item 7.
 7. **Auth** — postponed by Nir (2026-10-13), moved from second place to last.
    Still needed before the tool runs anywhere but localhost; `/admin/reset` is
    open today.

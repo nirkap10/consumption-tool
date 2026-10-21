@@ -687,3 +687,29 @@ fresh allowance, and a confirmation after the reset charges only the
 difference. Nir's call: leave it. Two identical reservations at the exact same
 moment behave like the usage race in 2026-10-05: the second insert fails and
 rolls back with a 500, and the balance stays correct.
+
+---
+
+## 2026-10-21 — Step 12: a report page in Thymeleaf, no login
+
+**Decision:** The UI part of after-v1 item 6 becomes Step 12: one web page that
+shows the monthly report. The viewer is the client, meaning the company that
+integrated the tool into its system, not an employee. There is no user login and
+no auth. The page is server-rendered with Thymeleaf inside the existing Spring
+Boot app. This lifts "any UI" from the deferred list for this one page only.
+
+**Why:** Nir's call (2026-10-21). The report is the only page that matters to
+the client. Thymeleaf keeps it to one project, one run, and no JavaScript build,
+which fits "simple and basic". Splitting the UI from auth keeps each step small,
+and auth's trigger ("No auth in v1", 2026-09-23: exposed anywhere but localhost)
+has not been reached.
+
+**Rejected:** A separate React + Vite app (a second project, npm, CORS, and a
+lot of new things to learn for one page). Employee or admin logins (the viewer
+is the client). Building auth together with the page.
+
+**Known risk:** Like every endpoint today, the page is open: anyone who can
+reach the app can read any report. Acceptable on localhost only.
+
+**Revisit when:** The tool runs anywhere but localhost (then auth, PLAN item 7),
+or the client needs more than the report.
