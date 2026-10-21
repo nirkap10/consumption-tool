@@ -100,7 +100,7 @@ changes, and the answer is `200` with the current balance (`201` for a new one).
 ## Deliberately deferred — do not add these unasked
 
 Auth · a transactional reset · per-model pricing or USD ·
-customers · any UI · alerts · forecasting · rate limiting · an SDK · deployment.
+customers · any UI beyond the Step 12 report page · alerts · forecasting · rate limiting · an SDK · deployment.
 
 Each of these has an entry in `docs/DECISIONS.md` with the reasoning and the
 trigger to revisit. Read that before proposing one of them.
