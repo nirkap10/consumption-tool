@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Monthly report</title>
+    <style>
+        body { margin: 0; background: #f6f7f9; color: #1f2933;
+               font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+        main { max-width: 760px; margin: 0 auto; padding: 32px 16px; }
+        h1 { font-size: 24px; margin: 0 0 20px; }
+        h2 { font-size: 16px; margin: 0 0 12px; }
+        .card { background: #fff; border: 1px solid #e3e6ea; border-radius: 8px;
+                padding: 20px; margin-bottom: 16px; }
+        form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+        label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #52606d; }
+        select, input { font: inherit; padding: 8px 10px; border: 1px solid #cbd2d9; border-radius: 6px; }
+        input[name=id] { width: 300px; max-width: 100%; }
+        button { font: inherit; padding: 8px 18px; border: 0; border-radius: 6px;
+                 background: #2f6fde; color: #fff; cursor: pointer; }
+        .error { background: #fdecec; border-color: #f5c2c2; color: #a61b1b; }
+        .total { font-size: 32px; font-weight: 600; }
+        .muted { color: #7b8794; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #eef0f2; font-size: 14px; }
+        th { color: #7b8794; font-weight: 500; }
+        th.num, td.num { text-align: right; white-space: nowrap; }
+        /* Bar chart: y axis on the left, one column per service. The bars and
+           the x labels use the same columns, so each label sits under its bar. */
+        .chart { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; font-size: 12px; color: #7b8794; }
+        .y-title { grid-column: 1 / 3; margin-bottom: 6px; }
+        .y-axis { height: 220px; display: flex; flex-direction: column; justify-content: space-between;
+                  text-align: right; margin: -7px 0; }
+        .bars, .x-labels { display: flex; gap: 12px; padding: 0 12px; }
+        .bars { height: 220px; align-items: flex-end; border-left: 1px solid #cbd2d9; border-bottom: 1px solid #cbd2d9; }
+        .bars > div, .x-labels > div { flex: 1; display: flex; justify-content: center; }
+        .bar { width: 100%; max-width: 28px; background: #2f6fde; border-radius: 4px 4px 0 0; min-height: 2px; }
+        .bars > div { height: 100%; align-items: flex-end; }
+        .x-labels { grid-column: 2; padding-top: 6px; }
+        .x-labels > div { text-align: center; color: #1f2933; overflow-wrap: anywhere; }
+        .x-title { grid-column: 2; text-align: center; margin-top: 4px; }
+        .id { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Monthly report</h1>
+
+    <div class="card">
+        <form method="get" action="/reports">
+            <label>Report for
+                <select name="type">
+                    <option value="user" th:selected="${type == 'user'}">User</option>
+                    <option value="organization" th:selected="${type == 'organization'}">Organization</option>
+                </select>
+            </label>
+            <label>Id
+                <input name="id" th:value="${id}" placeholder="User or organization id" required>
+            </label>
+            <label>Month
+                <input type="month" name="month" th:value="${month}">
+            </label>
+            <button type="submit">Show</button>
+        </form>
+    </div>
+
+    <div class="card error" th:if="${error}" th:text="${error}"></div>
+
+    <th:block th:if="${report}">
+        <div class="card">
+            <div class="muted" th:text="'Total tokens used in ' + ${report.month}"></div>
+            <div class="total" th:text="${#numbers.formatInteger(report.totalTokens, 1, 'COMMA')}"></div>
+            <div class="muted" th:if="${report.totalTokens == 0}">No usage in this month.</div>
+        </div>
+
+        <div class="card" th:if="${report.totalTokens > 0}">
+            <h2>By service</h2>
+            <table>
+                <tr><th>Service</th><th class="num">Tokens</th></tr>
+                <tr th:each="row : ${report.byService}">
+                    <td th:text="${row.key}"></td>
+                    <td class="num" th:text="${#numbers.formatInteger(row.value, 1, 'COMMA')}"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card" th:if="${report.byUser != null and report.totalTokens > 0}">
+            <h2>By user</h2>
+            <table>
+                <tr><th>User</th><th class="num">Tokens</th></tr>
+                <tr th:each="row : ${report.byUser}">
+                    <td class="id" th:text="${row.key}"></td>
+                    <td class="num" th:text="${#numbers.formatInteger(row.value, 1, 'COMMA')}"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card" th:if="${report.totalTokens > 0}">
+            <h2>Tokens by service</h2>
+            <div class="chart">
+                <div class="y-title">Tokens</div>
+                <div class="y-axis">
+                    <span th:text="${#numbers.formatInteger(maxServiceTokens, 1, 'COMMA')}"></span>
+                    <span th:text="${#numbers.formatInteger(maxServiceTokens / 2, 1, 'COMMA')}"></span>
+                    <span>0</span>
+                </div>
+                <div class="bars">
+                    <div th:each="row : ${report.byService}">
+                        <div class="bar" th:title="${row.key + ': ' + row.value}"
+                             th:style="'height:' + ${row.value * 100 / maxServiceTokens} + '%'"></div>
+                    </div>
+                </div>
+                <div class="x-labels">
+                    <div th:each="row : ${report.byService}" th:text="${row.key}"></div>
+                </div>
+                <div class="x-title">Service</div>
+            </div>
+        </div>
+    </th:block>
+</main>
+</body>
+</html>
