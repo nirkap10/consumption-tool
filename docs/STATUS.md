@@ -1,4 +1,4 @@
-# Status — 2026-10-21
+# Status — 2026-10-28
 
 ## Where we are
 
@@ -92,15 +92,21 @@ Step 11 (reservations, DECISIONS 2026-10-19), branch `step-11-reservations`,
 /usage` with the same `eventId` confirms it; a job every 30 seconds gives
 expired reservations back; reports leave out waiting reservations.
 
+Step 12 (report page, DECISIONS 2026-10-21 and 2026-10-28), branch
+`step-12-report-page`, **merged** (PR #17). `GET /reports` is a Thymeleaf page
+(`ReportPageController`, `templates/report.html`): a User/Organization dropdown,
+an id box and a month picker; the total, a "By service" table, a "By user"
+table for organizations, and a bar chart of tokens by service at the bottom
+(plain CSS, no JavaScript). Errors show on the page. Same numbers as `GET
+/api/v1/reports/monthly`, checked in the browser; `mvn test` is green (18).
+
 PRs are merged by Nir without waiting for a mentor review (see DECISIONS). Work in
 PLAN gets a branch and PR; small unplanned code changes may go straight to `main`
 (DECISIONS 2026-10-13).
 
 ## Next
 
-- **Step 12 — Report page** (PLAN, DECISIONS 2026-10-21): one Thymeleaf page
-  where the client sees the monthly report. No login. Not started; the open
-  choices are listed in the PLAN step.
+- Nothing scheduled. Next step is Nir's pick from PLAN's after-v1 list.
 - Auth is postponed to the end of the after-v1 list (DECISIONS 2026-10-13).
 - Smaller leftover from item 1: make the monthly reset one atomic `UPDATE`
   inside a transaction.
