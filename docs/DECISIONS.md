@@ -739,3 +739,18 @@ Choosing "all of the client's organizations" at once (not needed now).
 
 **Revisit when:** The client wants charts a few bars cannot show (e.g. usage
 over time), or more than one page.
+
+---
+
+## 2026-10-28 — Step 12 chart: one bar chart of tokens by service
+
+**Decision:** The report page shows one vertical bar chart: services on the x
+axis, tokens on the y axis (from 0 up to the biggest service), for both user
+and organization reports. The "By service" and "By user" tables are plain
+tables with no bars. Still plain CSS, no JavaScript.
+
+This supersedes the bars inside the tables in "Step 12 page details" (2026-10-28,
+the entry above).
+
+**Why:** Nir's call after seeing the page: a real chart with axes reads better
+than a share bar on each table row.

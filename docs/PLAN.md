@@ -196,8 +196,9 @@ Decided 2026-10-28 (DECISIONS 2026-10-28):
 - The page is `GET /reports` (`http://localhost:8080/reports` locally).
 - A dropdown picks "User" or "Organization", a text box takes the id, and a
   month picker takes the month (defaults to the current one).
-- Tables and a chart: a simple bar per service (and per user for an
-  organization), drawn with plain CSS.
+- Tables and a chart: one bar chart with the services on the x axis and tokens
+  on the y axis, for both user and organization reports, drawn with plain CSS.
+  Plain tables by service (and by user for an organization) below it.
 - Plain CSS in the page, light and simple. No CSS library, no JavaScript.
 
 *Verify:* the app runs, the page opens in a browser and shows the same numbers
