@@ -192,9 +192,13 @@ only; DECISIONS 2026-10-21). No login and no auth.
   service. No new queries.
 - A wrong or unknown id shows a message on the page, not a JSON error.
 
-*To decide when the step starts:* what the client picks on the page (one
-organization, one user, or all of its organizations); the page's path; a CSS
-library (e.g. Pico.css) or plain CSS; tables only or a chart too.
+Decided 2026-10-28 (DECISIONS 2026-10-28):
+- The page is `GET /reports` (`http://localhost:8080/reports` locally).
+- A dropdown picks "User" or "Organization", a text box takes the id, and a
+  month picker takes the month (defaults to the current one).
+- Tables and a chart: a simple bar per service (and per user for an
+  organization), drawn with plain CSS.
+- Plain CSS in the page, light and simple. No CSS library, no JavaScript.
 
 *Verify:* the app runs, the page opens in a browser and shows the same numbers
 as `GET /api/v1/reports/monthly` for the same id and month.

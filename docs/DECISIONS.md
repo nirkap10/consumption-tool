@@ -713,3 +713,29 @@ reach the app can read any report. Acceptable on localhost only.
 
 **Revisit when:** The tool runs anywhere but localhost (then auth, PLAN item 7),
 or the client needs more than the report.
+
+---
+
+## 2026-10-28 — Step 12 page details: dropdown, tables and CSS bars
+
+**Decision:** The report page lives at `GET /reports`. A dropdown chooses
+"User" or "Organization", a text box takes the id, and a month picker takes the
+month. The page shows the same numbers as `GET /api/v1/reports/monthly` as
+tables plus a bar chart: one bar per service (and per user for an
+organization), each bar's length being its share of the month's total. The
+bars and the rest of the look are plain CSS inside the page; there is no CSS
+library and no JavaScript.
+
+**Why:** Nir chose tables and a chart, picking either a user or an
+organization, and left the look to Claude ("light and simple"). Bars drawn with
+CSS need no library, no internet connection and no JavaScript, which fits
+"simple and basic". The path is ours to choose: locally the page is just
+`http://localhost:8080/reports`; a domain only matters once the tool is
+deployed (deferred).
+
+**Rejected:** Chart.js (a JavaScript library loaded from the internet, more than
+a few bars need). Pico.css or Bootstrap (another dependency for one page).
+Choosing "all of the client's organizations" at once (not needed now).
+
+**Revisit when:** The client wants charts a few bars cannot show (e.g. usage
+over time), or more than one page.
