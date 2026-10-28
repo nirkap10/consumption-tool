@@ -46,6 +46,9 @@ public class ReportPageController {
                     ? reportService.forOrganization(id.trim(), reportMonth)
                     : reportService.forUser(UUID.fromString(id.trim()), reportMonth);
             model.addAttribute("report", report);
+            // The chart's y axis goes up to the biggest service.
+            model.addAttribute("maxServiceTokens",
+                    report.byService().values().stream().mapToLong(Long::longValue).max().orElse(0));
         } catch (DateTimeParseException e) {
             model.addAttribute("error", "The month must look like 2026-10.");
         } catch (IllegalArgumentException e) {
